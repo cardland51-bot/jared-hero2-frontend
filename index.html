@@ -70,7 +70,7 @@
       <button id="talkBtn">Talk to Jared</button>
     </div>
     <div id="statusText">Ready.</div>
-    <audio id="speechAudio" controls></audio>
+    <audio id="speechAudio" preload="auto"></audio>
   </div>
 
   <footer class="footer">
@@ -78,19 +78,17 @@
   </footer>
 
   <script>
-  // Point this to your live backend
-  window.API_BASE = "https://jared-hero2-backend.onrender.com";
-  console.log("Backend base URL:", window.API_BASE);
-</script>
+    // ✅ Correct backend connection
+    window.API_BASE = "https://jared-hero2-backend.onrender.com";
+    console.log("Backend base URL:", window.API_BASE);
 
-
-  <script>
     const statusText = document.getElementById("statusText");
     const photoInput = document.getElementById("photoInput");
     const analyzeBtn = document.getElementById("analyzeBtn");
     const talkBtn = document.getElementById("talkBtn");
     const audioEl = document.getElementById("speechAudio");
 
+    // ---- ANALYZE ----
     analyzeBtn.addEventListener("click", async () => {
       const file = photoInput.files[0];
       if (!file) { statusText.textContent = "Upload a photo first."; return; }
@@ -116,23 +114,47 @@
       }
     });
 
+    // ---- SPEAK ----
     talkBtn.addEventListener("click", async () => {
+      if (talkBtn.disabled) return;
+      talkBtn.disabled = true;
       talkBtn.textContent = "Talking...";
+      statusText.textContent = "Preparing Jared's voice...";
+
       try {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+        audioEl.src = "";
+
         const res = await fetch(`${window.API_BASE}/speak`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: "Hello, I’m Jared. How can I help with your landscape today?" }),
+          body: JSON.stringify({
+            text: "Hello, I’m Jared. How can I help with your landscape today?",
+          }),
         });
+
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         audioEl.src = url;
         audioEl.style.display = "block";
+        audioEl.type = "audio/mpeg";
+
         await audioEl.play();
+        statusText.textContent = "🔊 Jared is speaking...";
+
+        audioEl.onended = () => {
+          URL.revokeObjectURL(url);
+          talkBtn.disabled = false;
+          talkBtn.textContent = "Talk to Jared";
+          statusText.textContent = "Ready.";
+        };
       } catch (err) {
         console.error("Speech error:", err);
-        statusText.textContent = "Speech error.";
-      } finally {
+        statusText.textContent = "❌ Speech error.";
+        talkBtn.disabled = false;
         talkBtn.textContent = "Talk to Jared";
       }
     });
