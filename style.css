@@ -1,0 +1,7 @@
+:root{--bg0:#0b1510;--bg1:#0f1a14;--ink:#e9f3ee;--muted:#9eb8ac;--accent:#12805f;--panel:#0f1b16;--stroke:#1b2a23}
+html,body{margin:0;height:100%;background:var(--bg0);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
+.pill{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--stroke);border-radius:999px;padding:.35rem .7rem;background:rgba(255,255,255,.02)}
+.topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(0,0,0,.35),transparent)}
+canvas{display:block;width:100vw;height:100vh;background:radial-gradient(120% 120% at 70% 10%, #12231c 0%, var(--bg1) 60%, var(--bg0) 100%)}
+.footer{position:fixed;inset:auto 0 8px 0;display:flex;justify-content:center;gap:12px}
+.btn{background:var(--accent);border:none;padding:.8rem 1.1rem;border-radius:12px;color:white;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(18,128,95,.25)}
