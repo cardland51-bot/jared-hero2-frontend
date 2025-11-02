@@ -1,0 +1,197 @@
+:root {
+  --bg0: #0b1510;
+  --bg1: #0f1a14;
+  --ink: #e9f3ee;
+  --muted: #9eb8ac;
+  --accent: #12805f;
+  --panel: #0f1b16;
+  --stroke: #1b2a23;
+}
+
+/* === GLOBAL === */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg0);
+  color: var(--ink);
+  font-family: system-ui, Segoe UI, Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* === HEADER / TABS === */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  backdrop-filter: blur(8px);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent);
+}
+
+/* === CANVAS BACKGROUND === */
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(
+    120% 120% at 70% 10%,
+    #12231c 0%,
+    var(--bg1) 60%,
+    var(--bg0) 100%
+  );
+}
+
+/* === FOOTER === */
+.footer {
+  position: fixed;
+  inset: auto 0 8px 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn {
+  background: var(--accent);
+  border: none;
+  padding: 0.8rem 1.1rem;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(18, 128, 95, 0.25);
+  transition: background 0.25s;
+}
+
+.btn:hover {
+  background: #00ffb3;
+  color: #00281a;
+}
+
+/* === FLOATING AI OVERLAY === */
+#uiOverlay {
+  position: fixed;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #00ffb3;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 255, 179, 0.25);
+  z-index: 999;
+}
+
+#uiOverlay h3 {
+  margin: 0 0 0.75rem;
+  color: #00ffb3;
+  font-weight: 500;
+}
+
+#uiOverlay input[type="file"] {
+  display: block;
+  margin: 0.5rem auto 1rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #00ffb3;
+  border-radius: 6px;
+  padding: 0.4rem;
+  width: 80%;
+}
+
+#uiOverlay button {
+  background: #00b37a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#uiOverlay button:hover {
+  background: #00ffb3;
+  color: #00281a;
+}
+
+#statusText {
+  margin-top: 0.75rem;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #d4ffe8;
+}
+
+audio {
+  display: none;
+}
+
+/* === RESPONSIVE MOBILE FIXES === */
+@media (max-width: 600px) {
+  /* Header adjustments */
+  .topbar {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.5rem;
+    height: auto;
+  }
+
+  .pill {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.7rem;
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  /* Footer spacing */
+  .footer {
+    inset: auto 0 12px 0;
+    padding: 0 0.5rem;
+  }
+
+  .btn {
+    width: 90%;
+    max-width: 320px;
+    font-size: 0.95rem;
+  }
+
+  /* Floating overlay tweaks */
+  #uiOverlay {
+    bottom: 6%;
+    width: 90%;
+    max-width: 360px;
+    padding: 0.9rem;
+    border-radius: 10px;
+  }
+
+  #uiOverlay h3 {
+    font-size: 1rem;
+  }
+
+  #uiOverlay button {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.9rem;
+  }
+
+  #statusText {
+    font-size: 0.85rem;
+  }
+}
+

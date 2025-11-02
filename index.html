@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>JARED • HERO2</title>
+  <meta name="theme-color" content="#0c1611" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    /* Floating control overlay */
+    #uiOverlay {
+      position: fixed;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid #00ffb3;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,255,179,0.25);
+      z-index: 999;
+    }
+    #uiOverlay h3 {
+      margin: 0 0 .75rem;
+      color: #00ffb3;
+      font-weight: 500;
+    }
+    #uiOverlay input[type=file] {
+      display: block;
+      margin: 0.5rem auto 1rem;
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #00ffb3;
+      border-radius: 6px;
+      padding: 0.4rem;
+      width: 80%;
+    }
+    #uiOverlay button {
+      background: #00b37a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      margin: 0.25rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #uiOverlay button:hover { background: #00ffb3; color:#00281a; }
+    #statusText { margin-top: .75rem; font-style: italic; font-size: .9rem; color:#d4ffe8; }
+    audio { display:none; }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="pill">JARED • HERO2</span></div>
+    <nav class="pill" id="status">Secure • Server-side AI</nav>
+  </header>
+
+  <canvas id="stage"></canvas>
+
+  <!-- === Floating AI UI === -->
+  <div id="uiOverlay">
+    <h3>AI Analyzer</h3>
+    <input type="file" id="photoInput" accept="image/*" />
+    <div>
+      <button id="analyzeBtn">Analyze</button>
+      <button id="talkBtn">Talk to Jared</button>
+    </div>
+    <div id="statusText">Ready.</div>
+    <audio id="speechAudio" controls></audio>
+  </div>
+
+  <footer class="footer">
+    <button class="btn" id="downloadDeck">Download Pitch Deck</button>
+  </footer>
+
+  <script>
+    // Point this to your live backend
+    window.API_BASE = "https://jared-hero2.onrender.com";
+  </script>
+
+  <script>
+    const statusText = document.getElementById("statusText");
+    const photoInput = document.getElementById("photoInput");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const talkBtn = document.getElementById("talkBtn");
+    const audioEl = document.getElementById("speechAudio");
+
+    analyzeBtn.addEventListener("click", async () => {
+      const file = photoInput.files[0];
+      if (!file) { statusText.textContent = "Upload a photo first."; return; }
+
+      statusText.textContent = "Analyzing...";
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch(`${window.API_BASE}/analyze-image`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.error) {
+          statusText.textContent = `❌ Failed: ${data.error}`;
+        } else {
+          statusText.textContent = `✅ ${data.summary}`;
+        }
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "❌ Analyze failed — network issue.";
+      }
+    });
+
+    talkBtn.addEventListener("click", async () => {
+      talkBtn.textContent = "Talking...";
+      try {
+        const res = await fetch(`${window.API_BASE}/speak`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: "Hello, I’m Jared. How can I help with your landscape today?" }),
+        });
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        audioEl.src = url;
+        audioEl.style.display = "block";
+        await audioEl.play();
+      } catch (err) {
+        console.error("Speech error:", err);
+        statusText.textContent = "Speech error.";
+      } finally {
+        talkBtn.textContent = "Talk to Jared";
+      }
+    });
+  </script>
+
+  <script src="./canvas.js"></script>
+</body>
+</html>
