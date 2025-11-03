@@ -240,12 +240,14 @@
   };
 
   // Deck
-  document.getElementById("downloadDeck").onclick=()=>{
-    const blob=new Blob(["Pitch deck placeholder."],{type:"application/pdf"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;a.download="WorkRockPro-PitchDeck.pdf";a.click();
-    URL.revokeObjectURL(url);
+  document.getElementById("downloadDeck").onclick = () => {
+  const a = document.createElement("a");
+  a.href = "https://cardland51-bot.github.io/jared-hero2-frontend/JARED(HERO1)_Mission_Strategy.pdf";
+  a.target = "_blank";
+  a.download = "JARED(HERO1)_Mission_Strategy.pdf";
+  a.click();
+};
+
   };
 })();
 </script>
