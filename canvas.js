@@ -60,22 +60,32 @@
   };
 
   // ====== Responsive layout ======
-  function layout() {
-    const isMobile = window.innerWidth < 700;
-    const bottomPadding = isMobile ? 100 : 80;
-    const buttonSpacing = isMobile ? 10 : 30;
+ function layout() {
+  const isMobile = window.innerWidth < 700;
 
-    if (isMobile) {
-      const totalWidth = ui.talk.w + buttonSpacing + ui.up.w;
-      const startX = (W - totalWidth) / 2;
-      ui.talk.x = startX;
-      ui.up.x = startX + ui.talk.w + buttonSpacing;
-      ui.full.x = W - ui.full.w - 20;
-    } else {
-      ui.talk.x = 20;
-      ui.up.x = 210;
-      ui.full.x = W - 150;
-    }
+  // Give extra space at the bottom and between buttons
+  const bottomPadding = isMobile ? 140 : 100;   // lifted slightly higher
+  const buttonSpacing = isMobile ? 20 : 40;     // more breathing room
+
+  if (isMobile) {
+    const totalWidth = ui.talk.w + buttonSpacing + ui.up.w;
+    const startX = (W - totalWidth) / 2;
+
+    // Add soft margins so buttons don't touch the edges
+    ui.talk.x = startX + 10;
+    ui.up.x = startX + ui.talk.w + buttonSpacing - 10;
+    ui.full.x = W - ui.full.w - 24;
+  } else {
+    ui.talk.x = 30;   // slight lift from left edge
+    ui.up.x = 240;    // spaced further apart
+    ui.full.x = W - 160;
+  }
+
+  ui.talk.y = H - bottomPadding;
+  ui.up.y = H - bottomPadding;
+  ui.full.y = 30;  // also drop full button down a touch
+}
+
 
     ui.talk.y = H - bottomPadding;
     ui.up.y = H - bottomPadding;
