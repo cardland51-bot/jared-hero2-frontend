@@ -74,22 +74,21 @@
 
   <canvas id="stage"></canvas>
 
+  <main id="centerUI">
+    <h1 class="coreText">Upload • Analyze • Estimate</h1>
+    <button id="uploadBtn">Upload Photo</button>
+    <img id="preview" alt="Preview" style="display:none;" />
+  </main>
+
+  <div id="floatingTips"></div>
+
   <footer class="footer">
     <button class="btn" id="downloadDeck">Download Pitch Deck</button>
   </footer>
 
-  <!-- ✅ Backend base URL helper -->
-  <script>
-    window.API_BASE =
-      window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1")
-        ? "http://localhost:3001"
-        : "https://jared-hero2-backend.onrender.com";
-    console.log("Backend base URL:", window.API_BASE);
-  </script>
-
-  <!-- ✅ Main interactive canvas logic -->
   <script src="./canvas.js"></script>
 </body>
+
 </html>
 
 
