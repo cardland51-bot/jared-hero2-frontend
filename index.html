@@ -6,144 +6,111 @@
 <title>JARED • HERO2</title>
 <meta name="theme-color" content="#0c1611" />
 <style>
-  html, body {
-    margin: 0; padding: 0;
-    background: #0c1611; color: #e9f3ee;
-    height: 100%; overflow: hidden;
-    font-family: system-ui, sans-serif;
-    -webkit-user-select: none; user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+  html,body {
+    margin:0;padding:0;
+    background:#0c1611;color:#e9f3ee;
+    height:100%;overflow:hidden;
+    font-family:system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
   }
   header.topbar {
-    position: fixed; top: 0; width: 100%;
-    background: #0f1b16; border-bottom: 1px solid #124d3b;
-    text-align: center; padding: 0.6rem 0;
-    z-index: 1000;
+    position:fixed;top:0;width:100%;
+    background:#0f1b16;border-bottom:1px solid #124d3b;
+    text-align:center;padding:0.6rem 0;z-index:1000;
   }
-  header .brand { color: #00ffb3; font-weight: 700; letter-spacing: 1px; }
+  header .brand { color:#00ffb3;font-weight:700;letter-spacing:1px; }
 
   main#centerUI {
-    position: absolute; top: 45%; left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center; z-index: 10; color: #00ffb3;
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;z-index:10;color:#00ffb3;
   }
-  main#centerUI h1 { margin-bottom: 1rem; }
+  main#centerUI h1 { margin-bottom:1rem;transition:opacity .4s ease; }
 
   button.btn {
-    background: #00b37a; border: none; color: #fff;
-    padding: 0.6rem 1.2rem; border-radius: 8px;
-    font-size: 1rem; font-weight: 600; cursor: pointer;
-    margin: 0.3rem; transition: background 0.3s;
+    background:#00b37a;border:none;color:#fff;
+    padding:0.6rem 1.2rem;border-radius:8px;
+    font-size:1rem;font-weight:600;cursor:pointer;
+    margin:0.3rem;transition:background .3s;
   }
-  button.btn:hover { background: #00ffb3; color: #00281a; }
+  button.btn:hover { background:#00ffb3;color:#00281a; }
 
   #preview {
-    display: none; margin-top: 1rem; width: 260px;
-    border-radius: 12px; border: 2px solid #00b37a;
-    box-shadow: 0 0 20px rgba(0,255,179,0.25);
+    display:none;margin-top:1rem;width:260px;
+    border-radius:12px;border:2px solid #00b37a;
+    box-shadow:0 0 20px rgba(0,255,179,.25);
   }
-
   .ai-tip {
-    display: none;
-    margin-top: 0.7rem;
-    font-size: 0.9rem;
-    background: rgba(0, 255, 179, 0.12);
-    border: 1px solid rgba(0,255,179,0.3);
-    color: #b7fff0;
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
-    box-shadow: 0 0 18px rgba(0,255,179,0.15);
+    display:none;margin-top:.7rem;font-size:.9rem;
+    background:rgba(0,255,179,.12);
+    border:1px solid rgba(0,255,179,.3);
+    color:#b7fff0;border-radius:10px;
+    padding:.6rem 1rem;
+    box-shadow:0 0 18px rgba(0,255,179,.15);
   }
-
   .saveInsight {
-    display: none;
-    background: transparent;
-    color: #00ffb3;
-    border: 1px solid #00ffb3;
-    border-radius: 8px;
-    margin-top: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.3s;
+    display:none;background:transparent;
+    color:#00ffb3;border:1px solid #00ffb3;
+    border-radius:8px;margin-top:.5rem;
+    padding:.4rem .8rem;font-size:.85rem;
+    cursor:pointer;transition:background .3s;
   }
-  .saveInsight:hover { background: rgba(0,255,179,0.1); }
+  .saveInsight:hover { background:rgba(0,255,179,.1); }
 
   .talk-zone {
-    position: fixed; bottom: 90px;
-    left: 50%; transform: translateX(-50%);
-    text-align: center; z-index: 900;
+    position:fixed;bottom:90px;
+    left:50%;transform:translateX(-50%);
+    text-align:center;z-index:900;
   }
   .talk-zone h3 {
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-    color: #00ffb3;
+    margin-bottom:.5rem;font-size:1rem;color:#00ffb3;
   }
   #talkBtn {
-    background: #00b37a;
-    border: none; border-radius: 50%;
-    width: 90px; height: 90px;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,255,179,0.4);
-    transition: all 0.25s ease;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: none;
+    background:#00b37a;border:none;border-radius:50%;
+    width:90px;height:90px;cursor:pointer;
+    box-shadow:0 0 15px rgba(0,255,179,.4);
+    transition:all .25s ease;
   }
   #talkBtn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px rgba(0,255,179,0.7);
+    transform:scale(1.05);
+    box-shadow:0 0 25px rgba(0,255,179,.7);
   }
   #talkBtn.listening {
-    background: #00ffb3;
-    transform: scale(1.12);
-    box-shadow: 0 0 40px rgba(0,255,179,0.9);
+    background:#00ffb3;
+    transform:scale(1.12);
+    box-shadow:0 0 40px rgba(0,255,179,.9);
   }
-  .talk-zone p {
-    margin-top: 0.6rem;
-    font-size: 0.9rem;
-    color: #9decd5;
-  }
+  .talk-zone p { margin-top:.6rem;font-size:.9rem;color:#9decd5; }
 
   footer.footer {
-    position: fixed; bottom: 0; width: 100%;
-    background: #0f1b16; border-top: 1px solid #124d3b;
-    text-align: center; padding: 0.75rem 0;
-    z-index: 1000;
+    position:fixed;bottom:0;width:100%;
+    background:#0f1b16;border-top:1px solid #124d3b;
+    text-align:center;padding:.75rem 0;z-index:1000;
   }
 
   .sales-link {
-    display: inline-block;
-    margin-top: 1rem;
-    color: #00ffb3;
-    font-weight: 500;
-    text-decoration: underline;
+    display:inline-block;margin-top:1rem;
+    color:#00ffb3;font-weight:500;text-decoration:underline;
   }
 
   #fullscreenBtn {
-    position: fixed;
-    top: 10px; right: 10px;
-    background: rgba(0,255,179,0.15);
-    border: 1px solid #00ffb3;
-    color: #00ffb3;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    z-index: 2000;
+    position:fixed;top:10px;right:10px;
+    background:rgba(0,255,179,.15);
+    border:1px solid #00ffb3;color:#00ffb3;
+    border-radius:6px;padding:6px 10px;
+    font-size:.9rem;cursor:pointer;z-index:2000;
   }
 </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="brand">JARED • HERO2</div>
-  </header>
-
+  <header class="topbar"><div class="brand">JARED • HERO2</div></header>
   <button id="fullscreenBtn">⛶ Full Screen</button>
 
   <main id="centerUI">
-    <h1>Upload = Estimate</h1>
+    <h1 id="headline">Upload = Estimate</h1>
     <button class="btn" id="uploadBtn">Upload Photo</button>
     <button class="btn" id="analyzeBtn" style="display:none;">Estimate</button>
     <img id="preview" alt="Preview" />
@@ -166,7 +133,6 @@
 <script>
 (() => {
   const API = "https://jared-hero2-backend.onrender.com";
-
   const uploadBtn = document.getElementById("uploadBtn");
   const analyzeBtn = document.getElementById("analyzeBtn");
   const downloadBtn = document.getElementById("downloadDeck");
@@ -176,11 +142,10 @@
   const aiTip = document.getElementById("aiTip");
   const saveInsight = document.getElementById("saveInsight");
   const fullscreenBtn = document.getElementById("fullscreenBtn");
+  const headline = document.getElementById("headline");
 
   const hidden = document.createElement("input");
-  hidden.type = "file";
-  hidden.accept = "image/*";
-  hidden.style.display = "none";
+  hidden.type = "file"; hidden.accept = "image/*"; hidden.style.display = "none";
   document.body.appendChild(hidden);
 
   let lastFile = null;
@@ -188,9 +153,19 @@
   let canListen = true;
   let speechAudio = null;
   const savedInsights = [];
+  let uploadCount = 0;
+  const MAX_UPLOADS = 3;
 
   // --- Upload ---
-  uploadBtn.onclick = () => hidden.click();
+  uploadBtn.onclick = () => {
+    if (uploadCount >= MAX_UPLOADS) {
+      aiTip.style.display = "block";
+      aiTip.textContent = "Upload limit reached (3). Please refresh or upgrade.";
+      return;
+    }
+    hidden.click();
+  };
+
   hidden.onchange = () => {
     const file = hidden.files[0];
     if (!file) return;
@@ -201,9 +176,11 @@
     analyzeBtn.style.display = "inline-block";
     aiTip.style.display = "none";
     saveInsight.style.display = "none";
+    headline.style.opacity = 0; // fade out headline
+    setTimeout(() => (headline.style.display = "none"), 400);
   };
 
-  // --- Analyze / Estimate ---
+  // --- Analyze ---
   analyzeBtn.onclick = async () => {
     if (!lastFile) {
       alert("Please upload a photo first.");
@@ -212,6 +189,7 @@
     analyzeBtn.disabled = true;
     aiTip.style.display = "block";
     aiTip.textContent = "Analyzing image... please wait.";
+    preview.style.boxShadow = "0 0 30px rgba(0,255,179,0.55)";
 
     try {
       const fd = new FormData();
@@ -227,72 +205,74 @@
         saveInsight.style.display = "none";
       };
       await speak(summary);
+      uploadCount++;
+      if (uploadCount >= MAX_UPLOADS) {
+        aiTip.textContent += "\n\n(Upload limit reached — 3 analyses max.)";
+      }
     } catch {
       aiTip.textContent = "Error analyzing image.";
       saveInsight.style.display = "none";
     }
+    preview.style.boxShadow = "0 0 20px rgba(0,255,179,0.25)";
     analyzeBtn.disabled = false;
   };
 
   // --- Speech Recognition ---
-  if ("webkitSpeechRecognition" in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
+  function initRecognition() {
+    if ("webkitSpeechRecognition" in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
 
-    recognition.onstart = () => talkBtn.classList.add("listening");
-    recognition.onend = () => {
-      talkBtn.classList.remove("listening");
-      canListen = true;
-    };
-    recognition.onresult = async (e) => {
-      const text = e.results[0][0].transcript;
-      try {
-        const res = await fetch(`${API}/inference`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
-        });
-        const data = await res.json();
-        aiTip.style.display = "block";
-        aiTip.textContent = data.content || "No response";
-        saveInsight.style.display = "inline-block";
-        saveInsight.onclick = () => {
-          savedInsights.push(`[${new Date().toLocaleString()}]\nVOICE: "${text}"\n${data.content}\n`);
-          alert("Insight saved!");
-          saveInsight.style.display = "none";
-        };
-        await speak(data.content);
-      } catch {
-        await speak("JARED unavailable right now.");
-      }
-    };
-  }
-
-  // --- Hold to Talk (mobile-safe) ---
-  function startSpeech() {
-    if (!recognition) {
+      recognition.onstart = () => talkBtn.classList.add("listening");
+      recognition.onend = () => {
+        talkBtn.classList.remove("listening");
+        canListen = true;
+      };
+      recognition.onresult = async (e) => {
+        const text = e.results[0][0].transcript;
+        try {
+          const res = await fetch(`${API}/inference`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+          });
+          const data = await res.json();
+          aiTip.style.display = "block";
+          aiTip.textContent = data.content || "No response";
+          saveInsight.style.display = "inline-block";
+          saveInsight.onclick = () => {
+            savedInsights.push(`[${new Date().toLocaleString()}]\nVOICE: "${text}"\n${data.content}\n`);
+            alert("Insight saved!");
+            saveInsight.style.display = "none";
+          };
+          await speak(data.content);
+        } catch {
+          await speak("JARED unavailable right now.");
+        }
+      };
+    } else {
       alert("Speech recognition not supported in this browser.");
-      return;
     }
+  }
+  initRecognition();
+
+  // --- Hold to Talk ---
+  function startSpeech() {
+    if (!recognition) { initRecognition(); }
     if (!canListen) return;
     canListen = false;
     recognition.start();
   }
-  function stopSpeech() {
-    if (recognition) recognition.stop();
-  }
+  function stopSpeech() { if (recognition) recognition.stop(); }
 
-  // Desktop
   talkBtn.addEventListener("mousedown", startSpeech);
   talkBtn.addEventListener("mouseup", stopSpeech);
   talkBtn.addEventListener("mouseleave", stopSpeech);
-
-  // Mobile
-  talkBtn.addEventListener("touchstart", e => { e.preventDefault(); startSpeech(); }, { passive: false });
-  talkBtn.addEventListener("touchend", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
-  talkBtn.addEventListener("touchcancel", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
+  talkBtn.addEventListener("touchstart", e => { e.preventDefault(); startSpeech(); }, { passive:false });
+  talkBtn.addEventListener("touchend", e => { e.preventDefault(); stopSpeech(); }, { passive:false });
+  talkBtn.addEventListener("touchcancel", e => { e.preventDefault(); stopSpeech(); }, { passive:false });
 
   // --- Speak (TTS) ---
   async function speak(text) {
@@ -309,26 +289,18 @@
       const u = URL.createObjectURL(b);
       speechAudio = new Audio(u);
       speechAudio.play();
-    } catch (err) {
-      console.log("TTS error:", err);
-    }
+    } catch (err) { console.log("TTS error:", err); }
   }
 
-  // --- Fullscreen toggle ---
+  // --- Fullscreen ---
   fullscreenBtn.onclick = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
   };
 
-  // --- Export saved insights ---
+  // --- Export ---
   exportBtn.onclick = () => {
-    if (savedInsights.length === 0) {
-      alert("No saved insights yet.");
-      return;
-    }
+    if (!savedInsights.length) { alert("No saved insights yet."); return; }
     const blob = new Blob(savedInsights, { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -349,5 +321,6 @@
 </script>
 </body>
 </html>
+
 
 
