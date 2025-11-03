@@ -69,6 +69,13 @@
       transform: translateX(-50%);
       text-align: center;
       z-index: 900;
+      color: #9decd5;
+    }
+    .talk-zone h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #00ffb3;
+      letter-spacing: 0.05em;
     }
     #talkBtn {
       background: #00b37a;
@@ -88,7 +95,7 @@
       box-shadow: 0 0 40px rgba(0,255,179,0.9);
     }
     .talk-zone p {
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
       font-size: 0.9rem;
       color: #9decd5;
       letter-spacing: 0.04em;
@@ -118,7 +125,8 @@
 
   <!-- Bottom Talk Button -->
   <div class="talk-zone">
-    <button id="talkBtn"></button>
+    <h3>Hold to Talk</h3>
+    <button id="talkBtn" aria-label="Talk"></button>
     <p>landscaping advice from JARED</p>
   </div>
 
@@ -198,7 +206,7 @@
       analyzeBtn.disabled = false;
     };
 
-    // Talk Button (no text selectable)
+    // Talk Button
     if ("webkitSpeechRecognition" in window) {
       recognition = new webkitSpeechRecognition();
       recognition.continuous = false;
@@ -272,6 +280,7 @@
   </script>
 </body>
 </html>
+
 
 
 
