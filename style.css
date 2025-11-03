@@ -145,6 +145,16 @@ footer .btn:hover {
   main#centerUI button { font-size: 0.9rem; }
   footer.footer { padding: 0.5rem; }
 }
+/* Let HTML UI stay on top of the canvas */
+#centerUI, #floatingTips, .footer {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+canvas#stage {
+  pointer-events: none; /* allow clicks through the canvas */
+}
 
 
 
