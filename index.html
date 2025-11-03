@@ -2,188 +2,352 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-<title>JARED • HERO2 (Canvas HUD)</title>
-<meta name="theme-color" content="#0b1b16" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>JARED • HERO2</title>
+<meta name="theme-color" content="#0c1611" />
 <style>
-  html,body{margin:0;height:100%;background:#0b1b16;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;}
-  canvas{display:block;}
+  html, body {
+    margin: 0; padding: 0;
+    background: #0c1611; color: #e9f3ee;
+    height: 100%; overflow: hidden;
+    font-family: system-ui, sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  header.topbar {
+    position: fixed; top: 0; width: 100%;
+    background: #0f1b16; border-bottom: 1px solid #124d3b;
+    text-align: center; padding: 0.6rem 0;
+    z-index: 1000;
+  }
+  header .brand { color: #00ffb3; font-weight: 700; letter-spacing: 1px; }
+
+  main#centerUI {
+    position: absolute; top: 45%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; z-index: 10; color: #00ffb3;
+  }
+  main#centerUI h1 { margin-bottom: 1rem; }
+
+  button.btn {
+    background: #00b37a; border: none; color: #fff;
+    padding: 0.6rem 1.2rem; border-radius: 8px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    margin: 0.3rem; transition: background 0.3s;
+  }
+  button.btn:hover { background: #00ffb3; color: #00281a; }
+
+  #preview {
+    display: none; margin-top: 1rem; width: 260px;
+    border-radius: 12px; border: 2px solid #00b37a;
+    box-shadow: 0 0 20px rgba(0,255,179,0.25);
+  }
+
+  .ai-tip {
+    display: none;
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+    background: rgba(0, 255, 179, 0.12);
+    border: 1px solid rgba(0,255,179,0.3);
+    color: #b7fff0;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    box-shadow: 0 0 18px rgba(0,255,179,0.15);
+  }
+
+  .saveInsight {
+    display: none;
+    background: transparent;
+    color: #00ffb3;
+    border: 1px solid #00ffb3;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .saveInsight:hover { background: rgba(0,255,179,0.1); }
+
+  .talk-zone {
+    position: fixed; bottom: 90px;
+    left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 900;
+  }
+  .talk-zone h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #00ffb3;
+  }
+  #talkBtn {
+    background: #00b37a;
+    border: none; border-radius: 50%;
+    width: 90px; height: 90px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,255,179,0.4);
+    transition: all 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+  #talkBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(0,255,179,0.7);
+  }
+  #talkBtn.listening {
+    background: #00ffb3;
+    transform: scale(1.12);
+    box-shadow: 0 0 40px rgba(0,255,179,0.9);
+  }
+  .talk-zone p {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: #9decd5;
+  }
+
+  footer.footer {
+    position: fixed; bottom: 0; width: 100%;
+    background: #0f1b16; border-top: 1px solid #124d3b;
+    text-align: center; padding: 0.75rem 0;
+    z-index: 1000;
+  }
+
+  .sales-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #00ffb3;
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
+  #fullscreenBtn {
+    position: fixed;
+    top: 10px; right: 10px;
+    background: rgba(0,255,179,0.15);
+    border: 1px solid #00ffb3;
+    color: #00ffb3;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    z-index: 2000;
+  }
 </style>
 </head>
+
 <body>
-<canvas id="hud"></canvas>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <header class="topbar">
+    <div class="brand">JARED • HERO2</div>
+  </header>
+
+  <button id="fullscreenBtn">⛶ Full Screen</button>
+
+  <main id="centerUI">
+    <h1>Upload = Estimate</h1>
+    <button class="btn" id="uploadBtn">Upload Photo</button>
+    <button class="btn" id="analyzeBtn" style="display:none;">Estimate</button>
+    <img id="preview" alt="Preview" />
+    <div class="ai-tip" id="aiTip"></div>
+    <button class="saveInsight" id="saveInsight">Save Insight</button>
+    <a href="https://cardland51-bot.github.io/sales-university/" target="_blank" class="sales-link">Visit Sales University →</a>
+  </main>
+
+  <div class="talk-zone">
+    <h3>Hold to Talk</h3>
+    <button id="talkBtn" aria-label="Talk"></button>
+    <p>landscaping advice from JARED</p>
+  </div>
+
+  <footer class="footer">
+    <button class="btn" id="exportLogs">Export Saved Insights</button>
+    <button class="btn" id="downloadDeck">Download Pitch Deck</button>
+  </footer>
 
 <script>
 (() => {
-  const API = "https://jared-hero2-backend.onrender.com";   // <-- FIXED backend URL
-  const cvs = document.getElementById('hud');
-  const ctx = cvs.getContext('2d',{alpha:false});
-  let DPR=window.devicePixelRatio||1; let S={w:innerWidth,h:innerHeight,t:0};
-  function resize(){DPR=window.devicePixelRatio||1;S.w=innerWidth;S.h=innerHeight;
-    cvs.width=S.w*DPR;cvs.height=S.h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}resize();
-  addEventListener('resize',resize);
+  const API = "https://jared-hero2-backend.onrender.com";
 
-  // --- Hidden file input ---
-  const fileInput=document.createElement('input');
-  fileInput.type='file';fileInput.accept='image/*';fileInput.style.display='none';
-  document.body.appendChild(fileInput);
+  const uploadBtn = document.getElementById("uploadBtn");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const downloadBtn = document.getElementById("downloadDeck");
+  const exportBtn = document.getElementById("exportLogs");
+  const preview = document.getElementById("preview");
+  const talkBtn = document.getElementById("talkBtn");
+  const aiTip = document.getElementById("aiTip");
+  const saveInsight = document.getElementById("saveInsight");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
 
-  let lastFile=null,photo={img:null,show:false,w:0,h:0,url:null,glow:0.5};
-  let savedInsights=[];
-  let rec=null,canListen=true,speechAudio=null,talkState='idle';
+  const hidden = document.createElement("input");
+  hidden.type = "file";
+  hidden.accept = "image/*";
+  hidden.style.display = "none";
+  document.body.appendChild(hidden);
 
-  // ---- UI buttons (logical) ----
-  const BTN={upload:{x:0,y:0,w:200,h:60,show:true}, analyze:{show:false}};
-  function centerUpload(){BTN.upload.x=S.w/2-100;BTN.upload.y=S.h/2-30;}
+  let lastFile = null;
+  let recognition = null;
+  let canListen = true;
+  let speechAudio = null;
+  const savedInsights = [];
 
-  // ---- Draw helpers ----
-  function roundRect(g,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);
-    g.beginPath();g.moveTo(x+rr,y);g.arcTo(x+w,y,x+w,y+h,rr);
-    g.arcTo(x+w,y+h,x,y+h,rr);g.arcTo(x,y+h,x,y,rr);g.arcTo(x,y,x+w,y,rr);g.closePath();}
-  function drawButton(b,label){
-    ctx.save();ctx.fillStyle='#00b37a';ctx.shadowColor='rgba(0,255,179,.4)';
-    ctx.shadowBlur=12;roundRect(ctx,b.x,b.y,b.w,b.h,10);ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='600 18px system-ui';ctx.textAlign='center';
-    ctx.textBaseline='middle';ctx.fillText(label,b.x+b.w/2,b.y+b.h/2+2);ctx.restore();
-  }
+  // --- Upload ---
+  uploadBtn.onclick = () => hidden.click();
+  hidden.onchange = () => {
+    const file = hidden.files[0];
+    if (!file) return;
+    lastFile = file;
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.style.display = "block";
+    analyzeBtn.style.display = "inline-block";
+    aiTip.style.display = "none";
+    saveInsight.style.display = "none";
+  };
 
-  // ---- Upload handler ----
-  fileInput.onchange=()=>{const f=fileInput.files[0];if(!f)return;
-    lastFile=f;if(photo.url)URL.revokeObjectURL(photo.url);
-    photo.url=URL.createObjectURL(f);photo.img=new Image();
-    photo.img.onload=()=>{photo.w=photo.img.width;photo.h=photo.img.height;
-      photo.show=true;BTN.upload.show=false;BTN.analyze.show=true;};
-    photo.img.src=photo.url;};
+  // --- Analyze / Estimate ---
+  analyzeBtn.onclick = async () => {
+    if (!lastFile) {
+      alert("Please upload a photo first.");
+      return;
+    }
+    analyzeBtn.disabled = true;
+    aiTip.style.display = "block";
+    aiTip.textContent = "Analyzing image... please wait.";
 
-  // ---- Analyze handler ----
-  async function analyze(){
-    if(!lastFile){toast("Upload first");return;}
-    talkState='thinking';toast('Analyzing image...');
-    try{
-      const fd=new FormData();fd.append('file',lastFile);
-      const r=await fetch(API+'/analyze-image',{method:'POST',body:fd});
-      const d=await r.json();const summary=d.summary||'No summary.';
-      savedInsights.push(`[${new Date().toLocaleString()}]\n${summary}\n`);
-      showHUD(summary);await speak(summary);
-    }catch{showHUD("Error analyzing image.");}
-    talkState='idle';
-  }
+    try {
+      const fd = new FormData();
+      fd.append("file", lastFile);
+      const res = await fetch(`${API}/analyze-image`, { method: "POST", body: fd });
+      const data = await res.json();
+      const summary = data.summary || "No summary returned.";
+      aiTip.textContent = summary;
+      saveInsight.style.display = "inline-block";
+      saveInsight.onclick = () => {
+        savedInsights.push(`[${new Date().toLocaleString()}]\n${summary}\n`);
+        alert("Insight saved!");
+        saveInsight.style.display = "none";
+      };
+      await speak(summary);
+    } catch {
+      aiTip.textContent = "Error analyzing image.";
+      saveInsight.style.display = "none";
+    }
+    analyzeBtn.disabled = false;
+  };
 
-  // ---- Voice (hold to talk) ----
-  if('webkitSpeechRecognition'in window){
-    rec=new webkitSpeechRecognition();
-    rec.lang='en-US';rec.interimResults=false;rec.continuous=false;
-    rec.onstart=()=>talkState='listening';
-    rec.onend=()=>{talkState='thinking';canListen=true;};
-    rec.onresult=async e=>{
-      const text=e.results[0][0].transcript;
-      try{
-        const r=await fetch(API+'/inference',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
-        const d=await r.json();const content=d.content||'No response';
-        savedInsights.push(`[${new Date().toLocaleString()}]\nVOICE:"${text}"\n${content}\n`);
-        showHUD(content);await speak(content);
-      }catch{showHUD("JARED unavailable.");}
-      talkState='idle';
+  // --- Speech Recognition ---
+  if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onstart = () => talkBtn.classList.add("listening");
+    recognition.onend = () => {
+      talkBtn.classList.remove("listening");
+      canListen = true;
+    };
+    recognition.onresult = async (e) => {
+      const text = e.results[0][0].transcript;
+      try {
+        const res = await fetch(`${API}/inference`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        aiTip.style.display = "block";
+        aiTip.textContent = data.content || "No response";
+        saveInsight.style.display = "inline-block";
+        saveInsight.onclick = () => {
+          savedInsights.push(`[${new Date().toLocaleString()}]\nVOICE: "${text}"\n${data.content}\n`);
+          alert("Insight saved!");
+          saveInsight.style.display = "none";
+        };
+        await speak(data.content);
+      } catch {
+        await speak("JARED unavailable right now.");
+      }
     };
   }
-  function startListening(){if(!rec)return toast('Speech not supported');if(!canListen)return;canListen=false;rec.start();}
-  function stopListening(){if(rec)rec.stop();}
 
-  async function speak(text){
-    try{if(speechAudio){speechAudio.pause();speechAudio=null;}
-      const r=await fetch(API+'/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
-      const b=await r.blob();const u=URL.createObjectURL(b);speechAudio=new Audio(u);await speechAudio.play();}
-    catch{}
+  // --- Hold to Talk (mobile-safe) ---
+  function startSpeech() {
+    if (!recognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+    if (!canListen) return;
+    canListen = false;
+    recognition.start();
+  }
+  function stopSpeech() {
+    if (recognition) recognition.stop();
   }
 
-  // ---- Export to PDF ----
-  async function exportPDF(){
-    if(savedInsights.length===0){toast('No insights yet');return;}
-    const { jsPDF } = window.jspdf;
-    const doc=new jsPDF({unit:'pt',format:'a4'});
-    doc.setFontSize(16);doc.setTextColor(40,255,180);
-    doc.text('JARED • HERO2 Insights',40,50);
-    doc.setFontSize(11);doc.setTextColor(255);
-    let y=80;
-    savedInsights.forEach(line=>{
-      const split=doc.splitTextToSize(line,500);
-      doc.text(split,40,y);y+=split.length*14+10;
-      if(y>770){doc.addPage();y=50;}
-    });
-    doc.save('JARED_Insights.pdf');
-    toast('Exported PDF');
+  // Desktop
+  talkBtn.addEventListener("mousedown", startSpeech);
+  talkBtn.addEventListener("mouseup", stopSpeech);
+  talkBtn.addEventListener("mouseleave", stopSpeech);
+
+  // Mobile
+  talkBtn.addEventListener("touchstart", e => { e.preventDefault(); startSpeech(); }, { passive: false });
+  talkBtn.addEventListener("touchend", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
+  talkBtn.addEventListener("touchcancel", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
+
+  // --- Speak (TTS) ---
+  async function speak(text) {
+    if (!text) return;
+    try {
+      if (speechAudio) { speechAudio.pause(); speechAudio = null; }
+      const r = await fetch(`${API}/speak`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      if (!r.ok) throw new Error("TTS failed");
+      const b = await r.blob();
+      const u = URL.createObjectURL(b);
+      speechAudio = new Audio(u);
+      speechAudio.play();
+    } catch (err) {
+      console.log("TTS error:", err);
+    }
   }
 
-  // ---- Simple toast + HUD message ----
-  let toastMsg=null,toastT=0;function toast(msg){toastMsg=msg;toastT=performance.now();}
-  let hudMsg=null;function showHUD(txt){hudMsg=txt;}
-
-  // ---- Pointer input ----
-  let down=false;
-  cvs.addEventListener('pointerdown',e=>{
-    down=true;const x=e.clientX,y=e.clientY;
-    if(BTN.upload.show&&x>BTN.upload.x&&x<BTN.upload.x+BTN.upload.w&&y>BTN.upload.y&&y<BTN.upload.y+BTN.upload.h)
-      fileInput.click();
-    if(BTN.analyze.show&&x>S.w/2-80&&x<S.w/2+80&&y>S.h*0.8-30&&y<S.h*0.8+30)
-      analyze();
-    // talk circle bottom-center
-    const tx=S.w/2,ty=S.h-90;const d=Math.hypot(x-tx,y-ty);
-    if(d<60)startListening();
-    // export circle right-bottom
-    const ex=S.w-90,ey=S.h-90;const de=Math.hypot(x-ex,y-ey);
-    if(de<50)exportPDF();
-  },{passive:false});
-  addEventListener('pointerup',()=>{down=false;stopListening();});
-
-  // ---- Draw Loop ----
-  function draw(t){
-    S.t=t;
-    ctx.fillStyle='#0b1b16';ctx.fillRect(0,0,S.w,S.h);
-    // Upload centered
-    if(BTN.upload.show){centerUpload();drawButton(BTN.upload,'UPLOAD PHOTO');}
-    // Photo preview
-    if(photo.show&&photo.img){
-      const maxW=Math.min(S.w*0.8,560),maxH=Math.min(S.h*0.5,360);
-      const scale=Math.min(maxW/photo.w,maxH/photo.h);
-      const w=photo.w*scale,h=photo.h*scale,x=(S.w-w)/2,y=S.h*0.35-h/2;
-      ctx.drawImage(photo.img,x,y,w,h);
-      ctx.strokeStyle='#00ffb3';ctx.lineWidth=2;roundRect(ctx,x-5,y-5,w+10,h+10,12);ctx.stroke();
+  // --- Fullscreen toggle ---
+  fullscreenBtn.onclick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
     }
-    // Analyze button visible after photo
-    if(BTN.analyze.show){
-      const x=S.w/2-80,y=S.h*0.8-25;
-      ctx.save();ctx.fillStyle='#00b37a';ctx.shadowColor='rgba(0,255,179,.4)';
-      ctx.shadowBlur=10;roundRect(ctx,x,y,160,50,10);ctx.fill();
-      ctx.fillStyle='#fff';ctx.font='600 18px system-ui';ctx.textAlign='center';
-      ctx.textBaseline='middle';ctx.fillText('ESTIMATE',S.w/2,S.h*0.8);ctx.restore();
-    }
-    // Mic circle bottom center
-    const cx=S.w/2,cy=S.h-90,r=50;
-    ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.fillStyle=talkState==='listening'?'#00ffb3':'#00b37a';
-    ctx.shadowColor='rgba(0,255,179,.4)';ctx.shadowBlur=12;ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='36px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('🎤',cx,cy+2);ctx.restore();
-    // Export circle right bottom
-    const ex=S.w-90,ey=S.h-90;
-    ctx.beginPath();ctx.arc(ex,ey,40,0,Math.PI*2);
-    ctx.fillStyle='#0d2b22';ctx.strokeStyle='#00ffb3';ctx.lineWidth=2;ctx.fill();ctx.stroke();
-    ctx.fillStyle='#00ffb3';ctx.font='28px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('📤',ex,ey+2);
+  };
 
-    // HUD messages
-    if(hudMsg){ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(0,0,S.w,40);
-      ctx.fillStyle='#00ffb3';ctx.font='500 14px system-ui';ctx.textAlign='center';
-      ctx.textBaseline='middle';ctx.fillText(hudMsg,S.w/2,20);}
-    // Toast
-    if(toastMsg){const age=t-toastT;if(age<1800){const a=1-Math.min(1,age/1800);
-      ctx.globalAlpha=a;ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,S.h-60,S.w,40);
-      ctx.fillStyle='#00ffb3';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.font='600 14px system-ui';ctx.fillText(toastMsg,S.w/2,S.h-40);ctx.globalAlpha=1;}else toastMsg=null;}
-    requestAnimationFrame(draw);
-  }requestAnimationFrame(draw);
+  // --- Export saved insights ---
+  exportBtn.onclick = () => {
+    if (savedInsights.length === 0) {
+      alert("No saved insights yet.");
+      return;
+    }
+    const blob = new Blob(savedInsights, { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "JARED_Saved_Insights.txt";
+    a.click();
+  };
+
+  // --- Download PDF ---
+  downloadBtn.onclick = () => {
+    const pdfUrl = "https://cardland51-bot.github.io/jared-hero2-frontend/JARED(HERO1)_Mission_Strategy.pdf";
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.target = "_blank";
+    a.download = "JARED(HERO1)_Mission_Strategy.pdf";
+    a.click();
+  };
 })();
 </script>
 </body>
 </html>
+
 
