@@ -15,6 +15,7 @@
       overflow: hidden;
       font-family: system-ui, sans-serif;
     }
+
     header.topbar {
       position: fixed;
       top: 0;
@@ -43,10 +44,10 @@
       z-index: 1;
     }
 
-    /* --- TALK AREA --- */
+    /* TALK AREA */
     .talk-area {
       position: fixed;
-      bottom: 110px;
+      bottom: 60px; /* moved down */
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
@@ -54,21 +55,18 @@
       z-index: 50;
       font-family: system-ui, sans-serif;
     }
-
     .talk-area h2 {
       margin: 0;
       font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: 0.5px;
     }
-
     .talk-area p {
       margin: 2px 0 12px 0;
       font-size: 0.9rem;
       color: #85f3d5;
       opacity: 0.9;
     }
-
     #talkBtn {
       background: #00b37a;
       color: #fff;
@@ -82,19 +80,15 @@
       box-shadow: 0 0 20px rgba(0,255,179,0.4);
       transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
     }
-
     #talkBtn.listening {
       background: #00ffb3;
       color: #00281a;
       transform: scale(1.1);
       box-shadow: 0 0 25px rgba(0,255,179,0.8);
     }
+    #talkBtn:hover { transform: scale(1.05); }
 
-    #talkBtn:hover {
-      transform: scale(1.05);
-    }
-
-    /* --- CENTER UI --- */
+    /* MAIN UI */
     main#centerUI {
       position: absolute;
       top: 50%;
@@ -191,7 +185,7 @@
       const ctx = c.getContext("2d");
       let recognition = null, canListen = true, speechAudio = null;
 
-      // Background grid
+      /* background grid */
       function grid() {
         ctx.save();
         ctx.globalAlpha = 0.07;
@@ -207,45 +201,60 @@
         ctx.stroke();
         ctx.restore();
       }
-      function size() {
-        c.width = innerWidth;
-        c.height = innerHeight;
-      }
-      addEventListener("resize", size);
-      size();
-      function loop() {
-        ctx.clearRect(0, 0, c.width, c.height);
-        grid();
-        requestAnimationFrame(loop);
-      }
+      function size() { c.width = innerWidth; c.height = innerHeight; }
+      addEventListener("resize", size); size();
+      function loop() { ctx.clearRect(0, 0, c.width, c.height); grid(); requestAnimationFrame(loop); }
       loop();
 
-      // Speech recognition setup
+      /* upload handler */
+      const hidden = document.createElement("input");
+      hidden.type = "file";
+      hidden.accept = "image/*";
+      hidden.style.display = "none";
+      document.body.appendChild(hidden);
+
+      const preview = document.getElementById("preview");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uiCenter = document.getElementById("centerUI");
+
+      uploadBtn.addEventListener("click", () => hidden.click());
+      hidden.addEventListener("change", async () => {
+        const f = hidden.files[0];
+        if (!f) return;
+        const u = URL.createObjectURL(f);
+        preview.src = u;
+        preview.style.display = "block";
+        uiCenter.querySelector("h1").style.display = "none";
+        uploadBtn.style.display = "none";
+        try {
+          const fd = new FormData();
+          fd.append("file", f);
+          const r = await fetch(`${API}/analyze-image`, { method: "POST", body: fd });
+          const j = await r.json();
+          await speak(j.summary || "No summary available.");
+        } catch {
+          await speak("Analysis failed.");
+        }
+      });
+
+      /* speech recognition */
       if ("webkitSpeechRecognition" in window) {
         recognition = new webkitSpeechRecognition();
         recognition.continuous = false;
         recognition.lang = "en-US";
         recognition.interimResults = false;
-
         recognition.onstart = () => talkBtn.classList.add("listening");
-        recognition.onend = () => {
-          talkBtn.classList.remove("listening");
-          canListen = true;
-        };
-        recognition.onresult = async (event) => {
-          const text = event.results[0][0].transcript;
+        recognition.onend = () => { talkBtn.classList.remove("listening"); canListen = true; };
+        recognition.onresult = async e => {
+          const text = e.results[0][0].transcript;
           await sendToJared(text);
         };
       }
 
       talkBtn.addEventListener("click", () => {
         if (!canListen) return;
-        if (recognition) {
-          canListen = false;
-          recognition.start();
-        } else {
-          alert("Speech recognition not supported.");
-        }
+        if (recognition) { canListen = false; recognition.start(); }
+        else alert("Speech recognition not supported.");
       });
 
       async function sendToJared(text) {
@@ -257,9 +266,7 @@
           });
           const data = await res.json();
           await speak(data.content || "No response");
-        } catch {
-          await speak("Jared unavailable.");
-        }
+        } catch { await speak("Jared unavailable."); }
       }
 
       async function speak(text) {
@@ -274,11 +281,21 @@
           const u = URL.createObjectURL(b);
           speechAudio = new Audio(u);
           speechAudio.play();
-        } catch (err) {
-          console.error("Speech error", err);
-        }
+        } catch { console.error("Speech error"); }
       }
+
+      /* pitch deck */
+      document.getElementById("downloadDeck").addEventListener("click", () => {
+        const blob = new Blob(["Pitch deck placeholder."], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "WorkRockPro-PitchDeck.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
     })();
   </script>
 </body>
 </html>
+
