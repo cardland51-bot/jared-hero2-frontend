@@ -1,113 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>JARED • HERO2</title>
-  <meta name="theme-color" content="#0c1611" />
-  <style>
-    html, body {
-      margin: 0; padding: 0;
-      background: #0c1611; color: #e9f3ee;
-      height: 100%; overflow: hidden;
-      font-family: system-ui, sans-serif;
-      -webkit-user-select: none; user-select: none;
-    }
-    header.topbar {
-      position: fixed; top: 0; width: 100%;
-      background: #0f1b16; border-bottom: 1px solid #124d3b;
-      text-align: center; padding: 0.6rem 0;
-      z-index: 1000;
-    }
-    header .brand { color: #00ffb3; font-weight: 700; letter-spacing: 1px; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>JARED • HERO2</title>
+<meta name="theme-color" content="#0c1611" />
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0c1611; color: #e9f3ee;
+    height: 100%; overflow: hidden;
+    font-family: system-ui, sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  header.topbar {
+    position: fixed; top: 0; width: 100%;
+    background: #0f1b16; border-bottom: 1px solid #124d3b;
+    text-align: center; padding: 0.6rem 0;
+    z-index: 1000;
+  }
+  header .brand { color: #00ffb3; font-weight: 700; letter-spacing: 1px; }
 
-    main#centerUI {
-      position: absolute; top: 45%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center; z-index: 10; color: #00ffb3;
-    }
-    main#centerUI h1 { margin-bottom: 1rem; }
+  main#centerUI {
+    position: absolute; top: 45%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; z-index: 10; color: #00ffb3;
+  }
 
-    button.btn {
-      background: #00b37a; border: none; color: #fff;
-      padding: 0.6rem 1.4rem; border-radius: 8px;
-      font-size: 1rem; font-weight: 600; cursor: pointer;
-      margin: 0.3rem; transition: background 0.3s;
-    }
-    button.btn:hover { background: #00ffb3; color: #00281a; }
+  main#centerUI h1 { margin-bottom: 1rem; }
 
-    #preview {
-      display: none; margin-top: 1rem; width: 260px;
-      border-radius: 12px; border: 2px solid #00b37a;
-      box-shadow: 0 0 20px rgba(0,255,179,0.25);
-      transition: box-shadow 0.5s ease;
-    }
+  button.btn {
+    background: #00b37a; border: none; color: #fff;
+    padding: 0.6rem 1.2rem; border-radius: 8px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    margin: 0.3rem; transition: background 0.3s;
+  }
+  button.btn:hover { background: #00ffb3; color: #00281a; }
 
-    /* AI Tip window below photo */
-    .ai-tip {
-      display: none;
-      margin-top: 0.7rem;
-      font-size: 0.9rem;
-      background: rgba(0, 255, 179, 0.12);
-      border: 1px solid rgba(0,255,179,0.3);
-      color: #b7fff0;
-      border-radius: 10px;
-      padding: 0.6rem 1rem;
-      box-shadow: 0 0 18px rgba(0,255,179,0.15);
-      animation: fadeIn 0.6s ease forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+  #preview {
+    display: none; margin-top: 1rem; width: 260px;
+    border-radius: 12px; border: 2px solid #00b37a;
+    box-shadow: 0 0 20px rgba(0,255,179,0.25);
+  }
 
-    /* Talk button area */
-    .talk-zone {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      z-index: 900;
-      color: #9decd5;
-    }
-    .talk-zone h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-      color: #00ffb3;
-      letter-spacing: 0.05em;
-    }
-    #talkBtn {
-      background: #00b37a;
-      border: none; border-radius: 50%;
-      width: 90px; height: 90px;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(0,255,179,0.4);
-      transition: all 0.25s ease;
-    }
-    #talkBtn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(0,255,179,0.7);
-    }
-    #talkBtn.listening {
-      background: #00ffb3;
-      transform: scale(1.12);
-      box-shadow: 0 0 40px rgba(0,255,179,0.9);
-    }
-    .talk-zone p {
-      margin-top: 0.6rem;
-      font-size: 0.9rem;
-      color: #9decd5;
-      letter-spacing: 0.04em;
-    }
+  .ai-tip {
+    display: none;
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+    background: rgba(0, 255, 179, 0.12);
+    border: 1px solid rgba(0,255,179,0.3);
+    color: #b7fff0;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    box-shadow: 0 0 18px rgba(0,255,179,0.15);
+  }
 
-    footer.footer {
-      position: fixed; bottom: 0; width: 100%;
-      background: #0f1b16; border-top: 1px solid #124d3b;
-      text-align: center; padding: 0.75rem 0;
-      z-index: 1000;
-    }
-  </style>
+  .saveInsight {
+    display: none;
+    background: transparent;
+    color: #00ffb3;
+    border: 1px solid #00ffb3;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .saveInsight:hover { background: rgba(0,255,179,0.1); }
+
+  .talk-zone {
+    position: fixed; bottom: 90px;
+    left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 900;
+  }
+  .talk-zone h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #00ffb3;
+  }
+  #talkBtn {
+    background: #00b37a;
+    border: none; border-radius: 50%;
+    width: 90px; height: 90px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,255,179,0.4);
+    transition: all 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+  #talkBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(0,255,179,0.7);
+  }
+  #talkBtn.listening {
+    background: #00ffb3;
+    transform: scale(1.12);
+    box-shadow: 0 0 40px rgba(0,255,179,0.9);
+  }
+  .talk-zone p {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: #9decd5;
+  }
+
+  footer.footer {
+    position: fixed; bottom: 0; width: 100%;
+    background: #0f1b16; border-top: 1px solid #124d3b;
+    text-align: center; padding: 0.75rem 0;
+    z-index: 1000;
+  }
+
+  .sales-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #00ffb3;
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
+  #fullscreenBtn {
+    position: fixed;
+    top: 10px; right: 10px;
+    background: rgba(0,255,179,0.15);
+    border: 1px solid #00ffb3;
+    color: #00ffb3;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    z-index: 2000;
+  }
+</style>
 </head>
 
 <body>
@@ -115,15 +141,18 @@
     <div class="brand">JARED • HERO2</div>
   </header>
 
+  <button id="fullscreenBtn">⛶ Full Screen</button>
+
   <main id="centerUI">
-    <h1>Upload • Analyze • Estimate</h1>
+    <h1>Upload = Estimate</h1>
     <button class="btn" id="uploadBtn">Upload Photo</button>
-    <button class="btn" id="analyzeBtn" style="display:none;">Analyze</button>
+    <button class="btn" id="analyzeBtn" style="display:none;">Estimate</button>
     <img id="preview" alt="Preview" />
     <div class="ai-tip" id="aiTip"></div>
+    <button class="saveInsight" id="saveInsight">Save Insight</button>
+    <a href="https://cardland51-bot.github.io/sales-university/" target="_blank" class="sales-link">Visit Sales University →</a>
   </main>
 
-  <!-- Bottom Talk Button -->
   <div class="talk-zone">
     <h3>Hold to Talk</h3>
     <button id="talkBtn" aria-label="Talk"></button>
@@ -131,155 +160,194 @@
   </div>
 
   <footer class="footer">
+    <button class="btn" id="exportLogs">Export Saved Insights</button>
     <button class="btn" id="downloadDeck">Download Pitch Deck</button>
   </footer>
 
-  <script>
-  (() => {
-    const API = "https://jared-hero2-backend.onrender.com";
-    const uploadBtn = document.getElementById("uploadBtn");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const downloadBtn = document.getElementById("downloadDeck");
-    const preview = document.getElementById("preview");
-    const talkBtn = document.getElementById("talkBtn");
-    const aiTip = document.getElementById("aiTip");
+<script>
+(() => {
+  const API = "https://jared-hero2-backend.onrender.com";
+  const uploadBtn = document.getElementById("uploadBtn");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const downloadBtn = document.getElementById("downloadDeck");
+  const exportBtn = document.getElementById("exportLogs");
+  const preview = document.getElementById("preview");
+  const talkBtn = document.getElementById("talkBtn");
+  const aiTip = document.getElementById("aiTip");
+  const saveInsight = document.getElementById("saveInsight");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
 
-    const hidden = document.createElement("input");
-    hidden.type = "file";
-    hidden.accept = "image/*";
-    hidden.style.display = "none";
-    document.body.appendChild(hidden);
+  const hidden = document.createElement("input");
+  hidden.type = "file";
+  hidden.accept = "image/*";
+  hidden.style.display = "none";
+  document.body.appendChild(hidden);
 
-    let lastFile = null;
-    let recognition = null;
-    let canListen = true;
-    let speechAudio = null;
+  let lastFile = null;
+  let recognition = null;
+  let canListen = true;
+  let speechAudio = null;
+  const savedInsights = [];
 
-    // Upload
-    uploadBtn.onclick = () => hidden.click();
-    hidden.onchange = () => {
-      const file = hidden.files[0];
-      if (!file) return;
-      lastFile = file;
-      const url = URL.createObjectURL(file);
-      preview.src = url;
-      preview.style.display = "block";
-      analyzeBtn.style.display = "inline-block";
-      aiTip.style.display = "none";
-    };
+  // --- Upload ---
+  uploadBtn.onclick = () => hidden.click();
+  hidden.onchange = () => {
+    const file = hidden.files[0];
+    if (!file) return;
+    lastFile = file;
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.style.display = "block";
+    analyzeBtn.style.display = "inline-block";
+    aiTip.style.display = "none";
+    saveInsight.style.display = "none";
+  };
 
-    // Analyze
-    analyzeBtn.onclick = async () => {
-      if (!lastFile) {
-        alert("Please upload a photo first.");
-        return;
-      }
-      analyzeBtn.disabled = true;
-
-      // glowing pulse
-      preview.style.boxShadow = "0 0 30px 8px rgba(0,255,179,0.7)";
-      let glow = true;
-      const glowPulse = setInterval(() => {
-        preview.style.boxShadow = glow
-          ? "0 0 40px 14px rgba(0,255,179,0.9)"
-          : "0 0 30px 6px rgba(0,255,179,0.5)";
-        glow = !glow;
-      }, 800);
-      setTimeout(() => {
-        clearInterval(glowPulse);
-        preview.style.boxShadow = "0 0 20px rgba(0,255,179,0.25)";
-      }, 15000);
-
-      aiTip.style.display = "block";
-      aiTip.textContent = "Analyzing image... please wait.";
-
-      try {
-        const fd = new FormData();
-        fd.append("file", lastFile);
-        const res = await fetch(`${API}/analyze-image`, { method: "POST", body: fd });
-        const data = await res.json();
-        aiTip.textContent = data.summary || "No summary returned.";
-        await speak(data.summary);
-      } catch {
-        aiTip.textContent = "Error analyzing image.";
-      }
-      analyzeBtn.disabled = false;
-    };
-
-    // Talk Button
-    if ("webkitSpeechRecognition" in window) {
-      recognition = new webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-
-      recognition.onstart = () => talkBtn.classList.add("listening");
-      recognition.onend = () => {
-        talkBtn.classList.remove("listening");
-        canListen = true;
-      };
-      recognition.onresult = async (e) => {
-        const text = e.results[0][0].transcript;
-        try {
-          const res = await fetch(`${API}/inference`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text })
-          });
-          const data = await res.json();
-          await speak(data.content || "No response");
-        } catch {
-          await speak("JARED unavailable right now.");
-        }
-      };
+  // --- Analyze / Estimate ---
+  analyzeBtn.onclick = async () => {
+    if (!lastFile) {
+      alert("Please upload a photo first.");
+      return;
     }
+    analyzeBtn.disabled = true;
+    aiTip.style.display = "block";
+    aiTip.textContent = "Analyzing image... please wait.";
 
-    talkBtn.onmousedown = talkBtn.ontouchstart = () => {
-      if (!recognition) {
-        alert("Speech recognition not supported in this browser.");
-        return;
-      }
-      if (!canListen) return;
-      canListen = false;
-      recognition.start();
-    };
-    talkBtn.onmouseup = talkBtn.ontouchend = () => {
-      if (recognition) recognition.stop();
-    };
+    try {
+      const fd = new FormData();
+      fd.append("file", lastFile);
+      const res = await fetch(`${API}/analyze-image`, { method: "POST", body: fd });
+      const data = await res.json();
+      const summary = data.summary || "No summary returned.";
+      aiTip.textContent = summary;
+      saveInsight.style.display = "inline-block";
+      saveInsight.onclick = () => {
+        savedInsights.push(`[${new Date().toLocaleString()}]\n${summary}\n`);
+        alert("Insight saved!");
+        saveInsight.style.display = "none";
+      };
+      await speak(summary);
+    } catch {
+      aiTip.textContent = "Error analyzing image.";
+      saveInsight.style.display = "none";
+    }
+    analyzeBtn.disabled = false;
+  };
 
-    async function speak(text) {
-      if (!text) return;
+  // --- Speech Recognition ---
+  if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onstart = () => talkBtn.classList.add("listening");
+    recognition.onend = () => {
+      talkBtn.classList.remove("listening");
+      canListen = true;
+    };
+    recognition.onresult = async (e) => {
+      const text = e.results[0][0].transcript;
       try {
-        if (speechAudio) { speechAudio.pause(); speechAudio = null; }
-        const r = await fetch(`${API}/speak`, {
+        const res = await fetch(`${API}/inference`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text })
         });
-        if (!r.ok) throw new Error("TTS failed");
-        const b = await r.blob();
-        const u = URL.createObjectURL(b);
-        speechAudio = new Audio(u);
-        speechAudio.play();
-      } catch (err) {
-        console.log("TTS error:", err);
+        const data = await res.json();
+        aiTip.style.display = "block";
+        aiTip.textContent = data.content || "No response";
+        saveInsight.style.display = "inline-block";
+        saveInsight.onclick = () => {
+          savedInsights.push(`[${new Date().toLocaleString()}]\nVOICE: "${text}"\n${data.content}\n`);
+          alert("Insight saved!");
+          saveInsight.style.display = "none";
+        };
+        await speak(data.content);
+      } catch {
+        await speak("JARED unavailable right now.");
       }
-    }
-
-    // Download PDF
-    downloadBtn.onclick = () => {
-      const pdfUrl =
-        "https://cardland51-bot.github.io/jared-hero2-frontend/JARED(HERO1)_Mission_Strategy.pdf";
-      const a = document.createElement("a");
-      a.href = pdfUrl;
-      a.target = "_blank";
-      a.download = "JARED(HERO1)_Mission_Strategy.pdf";
-      a.click();
     };
-  })();
-  </script>
+  }
+
+  // --- Hold to Talk (mobile-safe) ---
+  function startSpeech() {
+    if (!recognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+    if (!canListen) return;
+    canListen = false;
+    recognition.start();
+  }
+  function stopSpeech() {
+    if (recognition) recognition.stop();
+  }
+
+  // Desktop
+  talkBtn.addEventListener("mousedown", startSpeech);
+  talkBtn.addEventListener("mouseup", stopSpeech);
+  talkBtn.addEventListener("mouseleave", stopSpeech);
+
+  // Mobile
+  talkBtn.addEventListener("touchstart", e => { e.preventDefault(); startSpeech(); }, { passive: false });
+  talkBtn.addEventListener("touchend", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
+  talkBtn.addEventListener("touchcancel", e => { e.preventDefault(); stopSpeech(); }, { passive: false });
+
+  // --- Speak (TTS) ---
+  async function speak(text) {
+    if (!text) return;
+    try {
+      if (speechAudio) { speechAudio.pause(); speechAudio = null; }
+      const r = await fetch(`${API}/speak`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      if (!r.ok) throw new Error("TTS failed");
+      const b = await r.blob();
+      const u = URL.createObjectURL(b);
+      speechAudio = new Audio(u);
+      speechAudio.play();
+    } catch (err) { console.log("TTS error:", err); }
+  }
+
+  // --- Fullscreen toggle ---
+  fullscreenBtn.onclick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // --- Export saved insights ---
+  exportBtn.onclick = () => {
+    if (savedInsights.length === 0) {
+      alert("No saved insights yet.");
+      return;
+    }
+    const blob = new Blob(savedInsights, { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "JARED_Saved_Insights.txt";
+    a.click();
+  };
+
+  // --- Download PDF ---
+  downloadBtn.onclick = () => {
+    const pdfUrl = "https://cardland51-bot.github.io/jared-hero2-frontend/JARED(HERO1)_Mission_Strategy.pdf";
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.target = "_blank";
+    a.download = "JARED(HERO1)_Mission_Strategy.pdf";
+    a.click();
+  };
+})();
+</script>
 </body>
 </html>
+
 
 
 
