@@ -15,29 +15,44 @@
   }
   html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
   *{box-sizing:border-box}
+  .topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(0,0,0,.4);border-bottom:1px solid var(--stroke);z-index:20}
+  .brand{font-weight:900;letter-spacing:.08em;color:var(--mintL)}
   .btn{appearance:none;border:1px solid var(--mint);background:var(--glass);color:var(--mintL);
     padding:.85rem 1.4rem;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
     backdrop-filter:blur(6px);cursor:pointer;transition:box-shadow .2s,transform .1s,opacity .2s;
-    box-shadow:0 0 16px rgba(156,255,224,.14);font-size:13px}
+    box-shadow:0 0 16px rgba(156,255,224,.14);font-size:13px;margin:4px}
   .btn:hover{box-shadow:0 0 26px rgba(156,255,224,.45)}
   .pill{border:1px solid var(--stroke);background:var(--glass);color:var(--text);cursor:pointer;border-radius:999px;padding:.45rem .85rem;font-size:12px}
-  .topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(0,0,0,.4);border-bottom:1px solid var(--stroke)}
-  .brand{font-weight:900;letter-spacing:.08em;color:var(--mintL)}
-  #preview{display:none;position:relative;width:min(94vw,980px);aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--stroke);margin:auto;box-shadow:0 0 24px rgba(156,255,224,.14)}
-  #preview img{width:100%;height:100%;object-fit:cover}
+  .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  #preview{display:none;position:relative;width:min(94vw,980px);aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--stroke);margin:14px auto 0;box-shadow:0 0 24px rgba(156,255,224,.14)}
+  #preview img,#preview video{width:100%;height:100%;object-fit:cover}
   #edgeGlow{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;box-shadow:0 0 28px rgba(156,255,224,.6),inset 0 0 18px rgba(14,139,103,.55);transition:opacity .25s}
   .glow-on #edgeGlow{opacity:1}
-  #tips{position:relative;width:min(94vw,980px);min-height:14px;margin:auto;margin-top:10px}
+  #tips{position:relative;width:min(94vw,980px);min-height:14px;margin:10px auto 0}
   .tip{opacity:0;transform:translateY(8px);transition:all .5s cubic-bezier(.2,.9,.2,1);
     background:rgba(255,255,255,.06);border:1px solid var(--stroke);backdrop-filter:blur(8px);
     color:var(--text);padding:.55rem .75rem;border-radius:10px;margin:.35rem auto;max-width:92%}
   .tip.show{opacity:1;transform:translateY(0)}
+  /* KPI panel */
+  #panel{display:none;width:min(94vw,980px);margin:14px auto 0;padding:10px;border:1px solid var(--stroke);border-radius:14px;background:rgba(255,255,255,.05);backdrop-filter:blur(6px)}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .k{border:1px solid var(--stroke);border-radius:12px;padding:10px;background:rgba(255,255,255,.04);display:flex;gap:10px;align-items:center}
+  .k .i{font-size:18px}
+  .k .v{font-weight:800}
+  .k .s{font-size:12px;color:var(--textDim)}
+  @media (max-width:720px){ .kpis{grid-template-columns:1fr} }
+  /* Voice UI */
   #voiceOrb{position:fixed;left:18px;bottom:80px;width:54px;height:54px;border-radius:999px;border:1px solid var(--mint);
     background:radial-gradient(circle at 60% 40%, rgba(156,255,224,.25), rgba(47,176,233,.12));
-    box-shadow:0 0 16px rgba(156,255,224,.25);display:grid;place-items:center}
-  #voiceOrb.idle{box-shadow:0 0 10px rgba(156,255,224,.2)}
+    box-shadow:0 0 16px rgba(156,255,224,.25);display:grid;place-items:center;z-index:25}
   #voiceOrb.speaking{box-shadow:0 0 20px rgba(156,255,224,.45),0 0 28px rgba(47,176,233,.35)}
+  #talkBtn{position:fixed;right:18px;bottom:80px;background:var(--glass);border:1px solid var(--mint);
+    color:var(--mintL);padding:.7rem 1rem;border-radius:999px;cursor:pointer;backdrop-filter:blur(6px);
+    box-shadow:0 0 16px rgba(156,255,224,.25);font-weight:700;z-index:25}
+  /* Boot */
   #bootVeil{position:fixed;inset:0;background:#03100c;z-index:99;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--mintL)}
+  /* Floating capture */
+  #snapHint{position:absolute;right:10px;bottom:10px;border:1px solid var(--stroke);background:rgba(0,0,0,.45);padding:.4rem .7rem;border-radius:999px;font-size:12px}
   .footer{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:12px;color:rgba(233,255,246,.7);letter-spacing:.12em;text-transform:uppercase}
 </style>
 </head>
@@ -49,55 +64,101 @@
     </div>
   </div>
 
+  <!-- Boot -->
   <div id="bootVeil">
-    <div id="bootMsg">Please give Jared time to wake up.<br>Server configuring • Backend live</div>
+    <div id="bootMsg" style="text-align:center">Please give Jared time to wake up.<br>Server configuring • Backend live</div>
     <div id="dedication" style="margin-top:14px;opacity:0">Precision meets grit. Heart meets hustle. — Dedicated to Addison</div>
     <button class="pill" id="wakeBtn" style="display:none;margin-top:12px">Tap to Wake</button>
   </div>
 
   <main style="padding-top:70px;text-align:center">
-    <div class="btn-row">
-      <button class="btn" id="btnUpload">⬆ Upload Photo</button>
+    <div class="row">
+      <button class="btn" id="btnCamera">📷 Camera</button>
+      <button class="btn" id="btnUpload">⬆ Upload</button>
       <button class="btn" id="btnAnalyze">🔍 Analyze</button>
+      <button class="btn" id="btnGarage" style="display:none">Garage</button>
     </div>
-    <div id="preview"><img id="previewImg" alt="preview"/><div id="edgeGlow"></div></div>
+
+    <div id="preview">
+      <img id="previewImg" alt="preview"/>
+      <div id="edgeGlow"></div>
+    </div>
+
+    <!-- Result KPIs -->
+    <section id="panel" aria-live="polite">
+      <div class="kpis">
+        <div class="k"><div class="i">💲</div><div><div class="v" id="kCost">—</div><div class="s">Estimated Cost</div></div></div>
+        <div class="k"><div class="i">⚠️</div><div><div class="v" id="kRisk">—</div><div class="s">Risk Factors</div></div></div>
+        <div class="k"><div class="i">📈</div><div><div class="v" id="kUpsell">—</div><div class="s">Upsell Opportunities</div></div></div>
+      </div>
+    </section>
+
     <div id="tips"></div>
   </main>
 
-  <div id="voiceOrb" class="idle"></div>
+  <div id="voiceOrb" class="idle" title="Voice status"></div>
+  <button id="talkBtn">💬 Talk to Addie</button>
   <div class="footer">Powered by Cardinal-Garage_MND Inc.</div>
 
 <script>
 (() => {
+  /* ====== CONFIG ====== */
+  const API = (location.hostname.includes("localhost")||location.hostname.includes("127.0.0.1"))
+    ? "http://localhost:3001"
+    : "https://jared-hero2-backend.onrender.com";
+  const PAYPAL_URL = "https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU";
+
+  /* ====== ELEMENTS ====== */
   const el = {
-    btnUpload: document.querySelector("#btnUpload"),
-    btnAnalyze: document.querySelector("#btnAnalyze"),
-    preview: document.querySelector("#preview"),
-    previewImg: document.querySelector("#previewImg"),
-    edgeGlow: document.querySelector("#edgeGlow"),
-    tips: document.querySelector("#tips"),
-    voiceOrb: document.querySelector("#voiceOrb"),
-    wakeBtn: document.querySelector("#wakeBtn"),
-    bootVeil: document.querySelector("#bootVeil"),
-    dedication: document.querySelector("#dedication")
+    btnFull: qs('#btnFull'),
+    btnUpload: qs('#btnUpload'),
+    btnCamera: qs('#btnCamera'),
+    btnAnalyze: qs('#btnAnalyze'),
+    preview: qs('#preview'),
+    previewImg: qs('#previewImg'),
+    edgeGlow: qs('#edgeGlow'),
+    tips: qs('#tips'),
+    panel: qs('#panel'),
+    kCost: qs('#kCost'),
+    kRisk: qs('#kRisk'),
+    kUpsell: qs('#kUpsell'),
+    voiceOrb: qs('#voiceOrb'),
+    talkBtn: qs('#talkBtn'),
+    bootVeil: qs('#bootVeil'),
+    dedication: qs('#dedication'),
+    wakeBtn: qs('#wakeBtn')
   };
 
-  const STATE = { audioEnabled:false, uploads:0 };
-  const API="https://jared-hero2-backend.onrender.com";
-  const PAYPAL_URL="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU";
+  /* ====== STATE ====== */
+  const STATE = {
+    audioEnabled:false,
+    analyzeCount: Number(localStorage.getItem('herohud_analyzes')||0), // demo gate: paywall on 2nd try
+    speechQueue: [],
+    speaking:false
+  };
 
-  function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+  /* ====== UTIL ====== */
+  function qs(s){ return document.querySelector(s); }
+  const wait = ms => new Promise(r=>setTimeout(r,ms));
+  function tip(text){
+    const t=document.createElement("div");
+    t.className="tip"; t.textContent=text;
+    el.tips.appendChild(t);
+    requestAnimationFrame(()=>t.classList.add("show"));
+  }
+  function clearTips(){ el.tips.innerHTML = ""; }
+  function setAnalyzes(n){ STATE.analyzeCount=n; localStorage.setItem('herohud_analyzes',String(n)); }
 
-  /* ======= SPEECH: Addie (female) + Jared (male) ======= */
+  /* ====== SPEECH (Never Overlap via Queue) ====== */
   let activeUtter=null;
   window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
 
   function pickVoice(preferFemale=true){
-    const voices=window.speechSynthesis.getVoices();
-    if(!voices.length)return null;
-    const us=voices.filter(v=>v.lang.toLowerCase().includes("en-us"));
-    const females=["Google US English","Samantha","Jenny","Aria","Amelia","Sara","Coral","Alloy","Nova"];
-    const males=["Daniel","Alex","Matthew","Guy","Neural"];
+    const voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return null;
+    const us = voices.filter(v=>v.lang.toLowerCase().includes("en-us"));
+    const females = ["Google US English","Samantha","Jenny","Aria","Amelia","Sara","Coral"];
+    const males   = ["Daniel","Alex","Matthew","Guy"];
     if(preferFemale){
       return us.find(v=>females.includes(v.name))||us.find(v=>/female|aria|samantha|jenny|coral/i.test(v.name))||us[0]||voices[0];
     }else{
@@ -105,116 +166,230 @@
     }
   }
 
-  function speak(text,{female=false,rate=1.0,pitch=1.0,onend}={}){
-    if(!STATE.audioEnabled)return onend&&onend();
+  // Queue API
+  function speakQueued(text, {female=false, rate=1.0, pitch=1.0}={}){
+    STATE.speechQueue.push({text, female, rate, pitch});
+    processQueue();
+  }
+  function processQueue(){
+    if(STATE.speaking || !STATE.speechQueue.length || !STATE.audioEnabled) return;
+    const {text, female, rate, pitch} = STATE.speechQueue.shift();
+    speakNow(text,{female,rate,pitch, onend:()=>{ STATE.speaking=false; processQueue(); }});
+  }
+  function speakNow(text,{female=false,rate=1.0,pitch=1.0,onend}={}){
     stopSpeech();
-    const u=new SpeechSynthesisUtterance(text);
-    const v=pickVoice(female);
-    if(v)u.voice=v;
-    u.rate=rate;u.pitch=pitch;
-    u.onend=()=>{activeUtter=null;el.voiceOrb.className='idle';onend&&onend();};
-    u.onerror=u.onend;
-    activeUtter=u;el.voiceOrb.className='speaking';
-    window.speechSynthesis.speak(u);
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(female);
+      if(v) u.voice = v;
+      u.rate = rate; u.pitch = pitch;
+      u.onend = ()=>{ activeUtter=null; el.voiceOrb.classList.remove('speaking'); onend && onend(); };
+      u.onerror = u.onend;
+      activeUtter = u; STATE.speaking = true; el.voiceOrb.classList.add('speaking');
+      window.speechSynthesis.speak(u);
+    }catch{ onend && onend(); }
   }
   function stopSpeech(){
-    if(activeUtter){
-      window.speechSynthesis.cancel();
-      activeUtter=null;
-      el.voiceOrb.className='idle';
+    try{ if(activeUtter){ window.speechSynthesis.cancel(); activeUtter=null; } }catch{}
+    el.voiceOrb.classList.remove('speaking');
+  }
+
+  /* ====== BOOT / INTRO ====== */
+  async function bootSequence(){
+    await wait(1500); el.dedication.style.opacity=1;
+    await wait(900); el.wakeBtn.style.display="inline-block";
+  }
+  el.wakeBtn.onclick = () => {
+    STATE.audioEnabled = true;
+    el.bootVeil.style.display='none';
+    // Addie explains what’s being built
+    speakQueued("Welcome to Cardinal’s Garage. I’m Addie — your personal sales coach.", {female:true, rate:1.05, pitch:1.08});
+    speakQueued("We’re building Hero H U D, a living AI estimator and field coach that turns job photos into pricing, risks, and upsell-ready plans — so beginners feel confident and pros move faster.", {female:true, rate:1.04, pitch:1.06});
+    speakQueued("Tap Camera or Upload, then Analyze. I’ll handle training and docs; Jared covers technical site calls.", {female:true});
+  };
+  window.addEventListener('load', bootSequence);
+
+  /* ====== FULLSCREEN ====== */
+  el.btnFull.onclick = () => {
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen().catch(()=>{});
+  };
+
+  /* ====== CAMERA (front-facing) ====== */
+  el.btnCamera.onclick = openCamera;
+  let camStream=null, camVideo=null;
+  async function openCamera(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}, audio:false});
+      camStream = stream;
+      camVideo = document.createElement("video");
+      camVideo.playsInline = true; camVideo.muted = true; camVideo.srcObject = stream; await camVideo.play();
+      el.preview.style.display='block';
+      el.preview.innerHTML = "";
+      el.preview.appendChild(camVideo);
+      el.preview.appendChild(el.edgeGlow);
+      // Snap helper
+      const snap = document.createElement("div");
+      snap.id="snapHint"; snap.textContent="Tap video to snapshot";
+      el.preview.appendChild(snap);
+      tip("Camera active — tap video to snapshot.");
+      camVideo.onclick = () => {
+        const canvas=document.createElement("canvas");
+        canvas.width=camVideo.videoWidth||1280; canvas.height=camVideo.videoHeight||720;
+        const g=canvas.getContext("2d"); g.drawImage(camVideo,0,0,canvas.width,canvas.height);
+        const url = canvas.toDataURL("image/jpeg", 0.92);
+        // Replace with image
+        el.preview.innerHTML = "";
+        el.preview.appendChild(el.previewImg);
+        el.preview.appendChild(el.edgeGlow);
+        el.previewImg.src = url;
+        if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+        tip("Snapshot captured — tap Analyze.");
+      };
+    }catch(e){
+      tip("Camera not available or permission denied.");
     }
   }
 
-  /* ======= BOOT SEQUENCE ======= */
-  async function bootSequence(){
-    await wait(2000);
-    el.dedication.style.opacity=1;
-    await wait(1000);
-    el.wakeBtn.style.display="inline-block";
-  }
-  function addieIntro(){
-    const intro="Welcome to Cardinal’s Garage. I’m Addie — your personal sales coach. Upload a job photo, tap Analyze, and Jared will guide the technical side. I’ll handle training and sales confidence. Ready when you are.";
-    speak(intro,{female:true,rate:1.05,pitch:1.08});
-  }
-  el.wakeBtn.onclick=()=>{
-    STATE.audioEnabled=true;
-    el.bootVeil.style.display="none";
-    addieIntro();
-  };
-  window.addEventListener("load",bootSequence);
-
-  /* ======= FILE HANDLING ======= */
+  /* ====== UPLOAD ====== */
   const fileInput=document.createElement("input");
   fileInput.type="file"; fileInput.accept="image/*";
   el.btnUpload.onclick=()=>fileInput.click();
   fileInput.onchange=()=>{
-    const f=fileInput.files[0];
-    if(!f)return;
+    const f=fileInput.files[0]; if(!f) return;
     const url=URL.createObjectURL(f);
-    el.previewImg.src=url;
-    el.preview.style.display="block";
+    el.previewImg.src=url; el.preview.style.display="block";
     tip("Photo ready — tap Analyze.");
   };
 
-  /* ======= TIP ======= */
-  function tip(text){
-    const t=document.createElement("div");
-    t.className="tip";
-    t.textContent=text;
-    el.tips.appendChild(t);
-    requestAnimationFrame(()=>t.classList.add("show"));
-  }
-  function clearTips(){el.tips.innerHTML="";}
-
-  /* ======= PAYWALL ======= */
-  function canAnalyze(){ return STATE.uploads < 1; }
+  /* ====== DEMO PAYWALL (only on 2nd Analyze) ====== */
+  function canAnalyze(){ return STATE.analyzeCount < 1; } // 0 = free, block when >=1
   function showPaywall(){
     stopSpeech();
     const overlay=document.createElement("div");
     overlay.style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8);z-index:9999;";
-    overlay.innerHTML=`
-      <div style="background:#0f1916;border:1px solid var(--stroke);padding:1rem 1.5rem;border-radius:14px;text-align:center;max-width:480px;color:var(--text)">
-        <h3 style="color:var(--mintL)">Access Limit Reached</h3>
-        <p style="opacity:.85">You’ve completed your free demo. Unlock <b>Access+</b> for unlimited analyses and exports.</p>
-        <div style="margin-top:1rem">
-          <a class="btn" style="margin:4px" href="${PAYPAL_URL}" target="_blank">Activate Access+</a>
+    overlay.innerHTML = `
+      <div style="background:#0f1916;border:1px solid var(--stroke);padding:1rem 1.4rem;border-radius:16px;max-width:520px;color:var(--text);text-align:center">
+        <h3 style="margin:0 0 8px;color:var(--mintL)">Access Limit Reached</h3>
+        <p style="opacity:.9">Your free demo is complete. Unlock <b>Access+</b> for unlimited analyses.</p>
+        <div style="margin-top:10px">
+          <a class="btn" href="${PAYPAL_URL}" target="_blank" rel="noopener">Activate Access+</a>
           <button class="btn" id="pwClose">Close</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
-    overlay.querySelector("#pwClose").onclick=()=>overlay.remove();
+    overlay.querySelector('#pwClose').onclick=()=>overlay.remove();
   }
 
-  /* ======= ANALYZE ======= */
-  el.btnAnalyze.onclick=async()=>{
-    if(!el.previewImg.src){tip("Upload a photo first.");return;}
-    if(!canAnalyze()){showPaywall();return;}
+  /* ====== BACKEND ANALYZE ====== */
+  el.btnAnalyze.onclick = async ()=>{
+    if(!el.previewImg.src){ tip("Upload or capture a photo first."); return; }
+    if(!canAnalyze()){ showPaywall(); return; }
 
     clearTips();
-    el.preview.classList.add("glow-on");
-    speak("Analyzing photo, please wait...",{female:false,rate:0.95});
+    el.preview.classList.add('glow-on');
+    speakQueued("Analyzing photo. One moment.", {female:false, rate:0.96}); // Jared voice
 
     try{
       const formData=new FormData();
       const blob=await fetch(el.previewImg.src).then(r=>r.blob());
-      formData.append("file",blob,"upload.jpg");
-      const res=await fetch(API+"/analyze-image",{method:"POST",body:formData});
-      const data=await res.json();
-      const summary=data.summary||"Analysis complete.";
-      const rec=data.recommendation||"Standard prep and edging recommended.";
-      tip(summary);
-      tip(rec);
-      speak(summary,{female:false,rate:0.98,pitch:1.0});
-      STATE.uploads++;
-      if(STATE.uploads===1){
-        tip("✅ Demo mode: 1 analysis completed. Upgrade to continue using HeroHUD.");
-      }
+      formData.append("file", blob, "upload.jpg");
+      const resp = await fetch(`${API}/analyze-image`, { method:"POST", body:formData });
+      const data = await resp.json();
+
+      // Expected (optional) fields: summary, recommendation, cost, risks[], upsells[]
+      const summary = (data.summary||"Analysis complete.").trim();
+      const recommendation = (data.recommendation||"Standard site prep and edging recommended.").trim();
+
+      // KPIs with smart fallbacks
+      const cost = deriveCost(data);               // ${...}
+      const riskStr = deriveRisks(data);           // string like "Slope, roots"
+      const upsellStr = deriveUpsells(data);       // string like "Edging, mulch color"
+
+      // Voice (queued, no overlap)
+      speakQueued(summary, {female:false, rate:0.98});
+      speakQueued(recommendation, {female:false, rate:0.99});
+
+      // Tips and KPI panel
+      showAnalysisTips(summary);
+      renderKPIs(cost, riskStr, upsellStr);
+
+      setAnalyzes(STATE.analyzeCount + 1); // count this run
     }catch(e){
       tip("Analysis failed. Please try again.");
     }finally{
-      el.preview.classList.remove("glow-on");
+      el.preview.classList.remove('glow-on');
     }
   };
+
+  function deriveCost(data){
+    if(typeof data.cost === 'string') return data.cost;
+    if(typeof data.costEstimate === 'string') return data.costEstimate;
+    if(typeof data.costUSD === 'number') return `$${Math.round(data.costUSD).toLocaleString()}`;
+    // Fallback heuristic from summary length if present
+    const base = (data.summary||"").length;
+    const est = Math.min(2500, Math.max(85, Math.round(base*2.2)));
+    return `$${est.toLocaleString()}`;
+  }
+  function deriveRisks(data){
+    const arr = Array.isArray(data.risks) ? data.risks : [];
+    if(arr.length) return arr.slice(0,4).join(", ");
+    // soft guess from text
+    const s=(data.summary||"").toLowerCase();
+    const r=[];
+    if(/slope|grade|pitch/.test(s)) r.push("Slope");
+    if(/roots?/.test(s)) r.push("Roots");
+    if(/irrigation|sprinkler/.test(s)) r.push("Irrigation");
+    if(/drainage|water/.test(s)) r.push("Drainage");
+    return r.length? r.join(", ") : "Low";
+  }
+  function deriveUpsells(data){
+    const arr = Array.isArray(data.upsells) ? data.upsells : [];
+    if(arr.length) return arr.slice(0,4).join(", ");
+    const s=(data.summary||"").toLowerCase();
+    const u=[];
+    if(/edge|edging/.test(s)) u.push("Edging upgrade");
+    if(/mulch/.test(s)) u.push("Mulch color/depth");
+    if(/shrub|bush|hedge/.test(s)) u.push("Shrub shaping");
+    if(/weed|overgrown/.test(s)) u.push("Weed control");
+    return u.length? u.join(", ") : "Edging, Mulch color";
+  }
+  function renderKPIs(cost, risk, upsell){
+    el.kCost.textContent = cost || "—";
+    el.kRisk.textContent = risk || "—";
+    el.kUpsell.textContent = upsell || "—";
+    el.panel.style.display = "block";
+  }
+  function showAnalysisTips(summary){
+    const bits=(summary||"Define bed edge; set mulch depth; align shrub spacing.")
+      .replace(/\s+/g,' ').trim().split(/[.;]/).map(s=>s.trim()).filter(Boolean).slice(0,3);
+    let delay=150;
+    bits.forEach((b)=>{ setTimeout(()=>tip(b), delay); delay+=800; });
+  }
+
+  /* ====== TALK TO ADDIE (tap) ====== */
+  el.talkBtn.onclick = ()=>{
+    if(!STATE.audioEnabled){
+      STATE.audioEnabled=true;
+      speakQueued("Audio enabled. I’m Addie — ask me about pricing, risks, or how to pitch the job.", {female:true, rate:1.05, pitch:1.08});
+      return;
+    }
+    speakQueued("Here’s the play: show confidence, define the scope, then anchor on value. If you want, upload a photo and tap Analyze — Jared will read the site, and I’ll polish your pitch.", {female:true, rate:1.04, pitch:1.07});
+  };
+
+  /* ====== HELPERS ====== */
+  // drag orb (optional tiny UX)
+  drag(el.voiceOrb);
+  function drag(node){
+    let sx=0, sy=0, ox=0, oy=0, d=false;
+    const onDown=e=>{ d=true; sx=(e.clientX||e.touches?.[0].clientX); sy=(e.clientY||e.touches?.[0].clientY); const r=node.getBoundingClientRect(); ox=r.left; oy=r.top; e.preventDefault(); }
+    const onMove=e=>{ if(!d) return; const x=(e.clientX||e.touches?.[0].clientX)-sx+ox; const y=(e.clientY||e.touches?.[0].clientY)-sy+oy; node.style.left=x+'px'; node.style.top=y+'px'; }
+    const onUp=()=>{ d=false; }
+    node.addEventListener('mousedown',onDown); node.addEventListener('touchstart',onDown,{passive:false});
+    window.addEventListener('mousemove',onMove); window.addEventListener('touchmove',onMove,{passive:false});
+    window.addEventListener('mouseup',onUp); window.addEventListener('touchend',onUp);
+  }
+
 })();
 </script>
 </body>
