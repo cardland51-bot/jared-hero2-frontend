@@ -352,9 +352,7 @@
     await new Promise(r=>setTimeout(r,1100));
     boot.style.display='none';
     const lines = [
-      "Yo, yo, yo — Jared here. I’m a beta, so be patient with me.",
-      "Jared can look at your work, call out what he sees, and help you price like a pro.",
-      "Upload a photo, hit estimate, and let’s see what this thing can do."
+      "Yo, yo, yo — Jared here. I’m a beta, so be patient with me, Jared can look at your work, call out what he sees, and help you price like a pro, Upload a photo, hit estimate, and let’s see what this thing can do."
     ];
     for(const line of lines){ await speak(line); await new Promise(r=>setTimeout(r,260)); }
   }
