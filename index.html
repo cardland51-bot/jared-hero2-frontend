@@ -5,10 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
 <title>HeroHUD • Upload → Analyze → Send</title>
 <meta name="theme-color" content="#0b1b16" />
-
-<!-- PayPal SDK (Hosted Buttons enabled) -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAAgXonbH0yUmJj_xSSeLh_w8p-DJ9TonsElCjBeVs8qg5g-Mr_jJ34rNAHR879Z39mEgd9RjyojPdWaF0&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
-
 <style>
   :root{
     --bg-top:#0b1b16; --bg-bot:#06121a;
@@ -16,17 +12,15 @@
     --text:#E9FFF6; --textDim:rgba(233,255,246,.85);
     --glass:rgba(255,255,255,0.06); --stroke:rgba(156,255,224,0.28);
     --warn:#f6bf3a; --ink:#0e1815;
-    --gold:#f6bf3a; --amber:#ffcf66; --purple:#a87aff;
   }
-  html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));color:var(--text);
-    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
   *{box-sizing:border-box}
   .hidden{display:none!important}
-  .noselect{user-select:none;-webkit-user-select:none}
+  button{user-select:none;-webkit-user-select:none}
+  img{display:block}
 
   /* Topbar */
-  .topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;
-    background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.1));border-bottom:1px solid var(--stroke);z-index:50;backdrop-filter:blur(6px)}
+  .topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.1));border-bottom:1px solid var(--stroke);z-index:60;backdrop-filter:blur(6px)}
   .brand{font-weight:900;letter-spacing:.08em;color:var(--mintL)}
   .menu{display:flex;gap:8px;align-items:center}
   .pill{border:1px solid var(--stroke);background:var(--glass);color:var(--text);cursor:pointer;border-radius:999px;padding:.45rem .85rem;font-size:12px}
@@ -35,80 +29,69 @@
   .lang .on{border-color:var(--mint);color:var(--mintL)}
 
   /* Cinematic boot */
-  #boot{position:fixed;inset:0;background:
-      radial-gradient(120% 80% at 50% 20%, rgba(156,255,224,.12), transparent 60%),
-      #03100c;z-index:99;display:grid;place-items:center}
-  .bootbox{border:1px solid var(--stroke);background:rgba(15,25,22,.78);backdrop-filter:blur(8px);border-radius:16px;padding:18px 20px;
-    max-width:680px;width:min(92vw,680px);text-align:center;box-shadow:0 0 40px rgba(0,0,0,.6)}
+  #boot{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 20%, rgba(156,255,224,.12), transparent 60%), #03100c;z-index:99;display:grid;place-items:center}
+  .bootbox{border:1px solid var(--stroke);background:rgba(15,25,22,.78);backdrop-filter:blur(8px);border-radius:16px;padding:18px 20px;max-width:680px;width:min(92vw,680px);text-align:center;box-shadow:0 0 40px rgba(0,0,0,.6)}
   .bootline{opacity:0;transform:translateY(6px);transition:all .5s}
   .bootline.show{opacity:1;transform:none}
   .bootstep{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--textDim);margin:6px 0}
   .big{font-weight:800;letter-spacing:.12em;color:var(--mintL);margin:6px 0 2px}
   #wake{margin-top:12px}
-  /* Dedication overlay */
-  #dedOverlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;place-items:center;z-index:100}
-  .dedCard{border:1px solid var(--stroke);background:rgba(15,25,22,.9);backdrop-filter:blur(8px);border-radius:16px;padding:18px 22px;
-    max-width:620px;width:min(92vw,620px);text-align:center;box-shadow:0 0 40px rgba(0,0,0,.6)}
-  .dedTitle{font-weight:900;letter-spacing:.12em;color:var(--mintL);margin-bottom:6px}
-  .dedText{color:var(--textDim)}
+  .dedication{margin-top:10px;color:var(--textDim)}
 
   /* Stage */
   main{padding-top:70px;text-align:center}
+  .headline{margin:2px 0 8px;letter-spacing:.12em;color:var(--mintL);opacity:.85}
+  .subtag{opacity:.8;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+
   .btn{appearance:none;border:1px solid var(--mint);background:var(--glass);color:var(--mintL);
     padding:.85rem 1.4rem;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
-    backdrop-filter:blur(6px);cursor:pointer;transition:box-shadow .2s,transform .1s,opacity .2s;
+    backdrop-filter:blur(6px);cursor:pointer;transition:box-shadow .2s,transform .08s,opacity .2s;
     box-shadow:0 0 16px rgba(156,255,224,.14);font-size:13px}
+  .btn:active{transform:scale(.98)}
   .btn:hover{box-shadow:0 0 26px rgba(156,255,224,.45)}
   .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:8px 0}
 
-  /* Mid hero hint */
-  #midHint{margin:10px auto 0; font-weight:800; letter-spacing:.1em; opacity:.92; color:var(--mintL)}
-  #midHint.fade{animation:fadeOut 400ms ease forwards}
-  @keyframes fadeOut{to{opacity:0; transform:translateY(-6px)}}
+  .midTag{margin:4px auto 6px;color:var(--textDim);letter-spacing:.16em;text-transform:uppercase}
+  .midTag b{color:var(--mintL)}
 
   /* Camera & Upload preview */
-  #preview{display:none;position:relative;width:min(94vw,980px);aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--stroke);
-    margin:12px auto;box-shadow:0 0 24px rgba(156,255,224,.14)}
+  #preview{display:none;position:relative;width:min(94vw,980px);aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--stroke);margin:12px auto;box-shadow:0 0 24px rgba(156,255,224,.14)}
   #preview img,#preview video{width:100%;height:100%;object-fit:cover}
-  #edgeGlow{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;box-shadow:
-      0 0 28px rgba(156,255,224,.6),inset 0 0 18px rgba(14,139,103,.55);
-    transition:opacity .25s}
+  #edgeGlow{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;box-shadow:0 0 28px rgba(156,255,224,.6),inset 0 0 18px rgba(14,139,103,.55);transition:opacity .25s}
   .glow-on #edgeGlow{opacity:1}
-  .pulse{animation:pulseEdge 1.4s ease-in-out infinite}
-  @keyframes pulseEdge{
-    0%,100%{box-shadow:0 0 16px rgba(156,255,224,.25), inset 0 0 10px rgba(14,139,103,.35)}
-    50%{box-shadow:0 0 32px rgba(156,255,224,.55), inset 0 0 20px rgba(14,139,103,.55)}
-  }
+  .analyzing #edgeGlow{animation:throb 1.1s ease-in-out infinite}
+  @keyframes throb{0%{opacity:.15}50%{opacity:.9}100%{opacity:.15}}
   .capBtn{position:absolute;right:10px;bottom:10px}
 
   /* Tips & results */
-  #tips{position:relative;width:min(94vw,980px);margin:10px auto 0}
+  #tips{position:relative;width:min(94vw,980px);margin:10px auto 60px}
   .tip{opacity:0;transform:translateY(8px);transition:all .5s cubic-bezier(.2,.9,.2,1);
     background:rgba(255,255,255,.06);border:1px solid var(--stroke);backdrop-filter:blur(8px);
-    color:var(--text);padding:.6rem .75rem;border-radius:10px;margin:.4rem auto;max-width:92%}
+    color:var(--text);padding:.6rem .75rem;border-radius:10px;margin:.4rem auto;max-width:92%;text-align:left}
   .tip.show{opacity:1;transform:translateY(0)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chip{border:1px solid var(--stroke);background:rgba(255,255,255,.06);border-radius:999px;padding:.2rem .5rem;font-size:11px}
   .ok{border-color:#3ddc97}
   .risk{border-color:#f6bf3a}
   .up{border-color:#2FB0E9}
 
-  /* Voice controls (Addie speak / mic) */
-  #controlsBar{position:fixed;left:50%;transform:translateX(-50%);bottom:86px;width:min(94vw,980px);display:flex;gap:10px;justify-content:center;z-index:60;flex-wrap:wrap}
-  .ghost{border:1px dashed var(--stroke);background:rgba(255,255,255,.02);color:var(--textDim)}
-  #btnTalk{touch-action:manipulation}
-  #btnSend{touch-action:manipulation}
-  #hintTalk{font-size:11px;opacity:.85;color:var(--textDim);margin-top:-2px}
-
-  /* Stop orb (speech cancel) */
+  /* Voice orb (stop) */
   #orb{position:fixed;left:18px;bottom:86px;width:56px;height:56px;border-radius:999px;border:1px solid var(--mint);
-    background:radial-gradient(circle at 60% 40%, rgba(156,255,224,.25), rgba(47,176,233,.12));box-shadow:0 0 16px rgba(156,255,224,.25);display:grid;place-items:center;z-index:60}
+    background:radial-gradient(circle at 60% 40%, rgba(156,255,224,.25), rgba(47,176,233,.12));box-shadow:0 0 16px rgba(156,255,224,.25);display:grid;place-items:center;z-index:70}
   #orb.idle{box-shadow:0 0 10px rgba(156,255,224,.2)}
   #orb.speaking{box-shadow:0 0 20px rgba(156,255,224,.45),0 0 28px rgba(47,176,233,.35)}
   .orbStop{position:absolute;inset:auto auto -28px 50%;transform:translateX(-50%);font-size:11px;opacity:.85}
 
+  /* Talk to Addie panel */
+  .talkWrap{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .talkHint{font-size:12px;color:var(--textDim);letter-spacing:.06em}
+  #btnTalk{touch-action:none}
+  #btnSend{touch-action:none}
+
   /* Toast */
   #toast{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:16px;width:min(92vw,540px);
     background:rgba(15,25,22,.96);border:1px solid var(--stroke);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.45), 0 0 24px rgba(156,255,224,.18);
-    color:var(--text);z-index:70;padding:12px 12px 10px;transition:transform .35s ease, opacity .35s ease;opacity:0}
+    color:var(--text);z-index:75;padding:12px 12px 10px;transition:transform .35s ease, opacity .35s ease;opacity:0}
   #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   .t-title{font-weight:700;margin-bottom:4px;color:var(--mintL)}
   .t-body{font-size:13px;color:var(--textDim)}
@@ -122,19 +105,13 @@
   .gTitle{font-weight:800;letter-spacing:.12em;color:var(--mintL)}
   .gBody{flex:1;overflow:auto;padding:16px}
   .gGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-  .card{background:#0f1916;border:1px solid var(--stroke);border-radius:14px;padding:12px 12px 14px;position:relative;overflow:hidden}
+  .card{background:#0f1916;border:1px solid var(--stroke);border-radius:14px;padding:12px 12px 14px}
   .tag{display:inline-block;border:1px solid var(--mint);color:var(--mintL);padding:.25rem .5rem;border-radius:999px;font-size:11px;margin-bottom:6px}
-  .price{margin-top:8px;opacity:.95;font-weight:800}
+  .price{margin-top:8px;opacity:.9}
   .card .btn-row{justify-content:flex-start}
-  .glowMint{box-shadow:0 0 20px rgba(52,209,160,.35) inset}
-  .glowAqua{box-shadow:0 0 20px rgba(47,176,233,.35) inset}
-  .glowTeal{box-shadow:0 0 20px rgba(14,139,103,.35) inset}
-  .glowGold{box-shadow:0 0 20px rgba(246,191,58,.35) inset}
-  .glowRoyal{box-shadow:0 0 22px rgba(52,209,160,.25),0 0 24px rgba(47,176,233,.25) inset}
-  .glowFounder{box-shadow:0 0 24px rgba(255,207,102,.35),0 0 26px rgba(168,122,255,.35) inset}
   .link{color:var(--mintL);text-decoration:underline;cursor:pointer}
 
-  .footer{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:12px;color:rgba(233,255,246,.72);letter-spacing:.12em;text-transform:uppercase}
+  .footer{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:12px;color:rgba(233,255,246,.7);letter-spacing:.12em;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -161,48 +138,42 @@
       <div class="bootline big" id="b4">Activating your sales coach</div>
       <div class="bootline bootstep" id="b5">Loading Addie + Jared</div>
       <button class="pill bootline" id="wake">Tap to Wake</button>
-    </div>
-  </div>
-
-  <!-- Dedication overlay (appears AFTER Wake, for ~3.2s) -->
-  <div id="dedOverlay" class="noselect" aria-hidden="true">
-    <div class="dedCard">
-      <div class="dedTitle">DEDICATION</div>
-      <div class="dedText">Precision meets grit. Heart meets hustle. — Dedicated to Addison</div>
+      <!-- Dedication appears AFTER greeting, before complete -->
+      <div class="bootline bootstep dedication" id="ded">Precision meets grit. Heart meets hustle. — Dedicated to Addison</div>
     </div>
   </div>
 
   <!-- Main -->
   <main>
+    <h3 class="headline">UPLOAD • ANALYZE • SEND</h3>
+    <div class="subtag">Powered by Cardinal-Garage</div>
+
     <div class="btn-row">
       <button class="btn" id="btnUpload">⬆ Upload Photo</button>
       <button class="btn" id="btnCamera">📷 Camera</button>
       <button class="btn" id="btnAnalyze">🔍 Analyze</button>
     </div>
 
-    <!-- Mid hero hint that fades once an image is loaded -->
-    <div id="midHint" class="noselect">UPLOAD • ESTIMATE • SEND</div>
+    <div class="midTag"><b>UPLOAD • ESTIMATE • SEND</b></div>
 
     <div id="preview">
       <img id="previewImg" alt="preview"/>
       <div id="edgeGlow"></div>
+      <!-- Camera capture button gets injected here -->
+    </div>
+
+    <!-- Talk to Addie -->
+    <div class="talkWrap">
+      <button class="btn" id="btnTalk" aria-label="Hold to talk to Addie">🎙️ Tap & Hold</button>
+      <button class="btn" id="btnSend" aria-label="Send voice to Addie">➤ Send</button>
+      <div class="talkHint">Hint: <b>Tap to talk</b>, then <b>tap to send</b>. Addie coaches; Jared estimates.</div>
     </div>
 
     <!-- Result chips (cost / risks / upsell) appear as tips -->
     <div id="tips"></div>
   </main>
 
-  <!-- Voice bar (talk → send) -->
-  <div id="controlsBar" class="noselect">
-    <div>
-      <button class="btn ghost" id="btnTalk" aria-label="Tap to talk">🎙️ Tap to Talk</button>
-      <div id="hintTalk">Tap to talk • Tap again to send</div>
-    </div>
-    <button class="pill" id="btnSend" aria-label="Send voice">Send</button>
-    <button class="pill" id="btnClearLog" aria-label="Clear on-screen tips">Clear Tips</button>
-  </div>
-
-  <!-- Voice STOP orb -->
+  <!-- Voice orb with STOP -->
   <div id="orb" class="idle" title="Stop speaking">
     ⏹
     <div class="orbStop">Stop</div>
@@ -219,97 +190,94 @@
     </div>
   </div>
 
-  <!-- Garage (tiers + portals + founders link) -->
+  <!-- Garage (tiers + portals + founder link + PayPal hosted button) -->
   <div id="garage" class="hidden" aria-hidden="true">
     <div class="garageWrap">
       <div class="gHead">
         <div class="gTitle">CARDINAL GARAGE • Tiers & Portals</div>
         <div class="btn-row">
-          <!-- Founder Black Book (ensure this file exists in the repo root) -->
-         <a class="pill" id="founderBook"
-   href="https://cardland51-bot.github.io/jared-hero2-frontend/GarageMind_Founder_Black_Book.pdf.pdf"
-   target="_blank" rel="noopener"
-   style="display:flex;align-items:center;gap:6px;">
-   📘 Founders Black Book <span style="opacity:.8;font-size:11px">(PDF)</span>
-</a>
-<button class="pill" id="gClose">Close</button>
-</div>
-</div>
-<div class="gBody">
-  <div class="gGrid">
+          <!-- Founder’s Black Book (direct GH Pages link) -->
+          <a class="pill" id="founderBook" href="https://cardland51-bot.github.io/jared-hero2-frontend/GarageMind_Founder_Black_Book.pdf" target="_blank" rel="noopener">Founders Black Book (PDF)</a>
+          <button class="pill" id="gClose">Close</button>
+        </div>
+      </div>
+      <div class="gBody">
+        <div class="gGrid">
+          <!-- DEMO -->
+          <div class="card">
+            <span class="tag">BASIC • Demo</span>
+            <div>One full Analyze run (photo → cost, risks, upsells). Exports included.</div>
+            <div class="price">$0</div>
+            <div class="chips">
+              <span class="chip ok">Photo → Estimate</span>
+              <span class="chip ok">TXT Export</span>
+              <span class="chip">Garage Access (read-only)</span>
+            </div>
+          </div>
 
-          <!-- TIER: Access+ (Starter) -->
-          <div class="card glowMint">
-            <span class="tag">Access+ • Starter</span>
-            <div>Unlimited basic photo → estimate analyses. Exports (TXT/JSON) included.</div>
+          <!-- Unlimited Analysis -->
+          <div class="card">
+            <span class="tag">Unlimited Analysis</span>
+            <div>Unlimited image analyses. Keep iterating. Keep selling.</div>
             <div class="price">$25 / month</div>
             <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Activate</a>
+              <div id="paypal-unlimited"></div>
             </div>
           </div>
 
-          <!-- TIER: Pro Estimate (Per Report) -->
-          <div class="card glowAqua">
+          <!-- Pro Report (per report) -->
+          <div class="card">
             <span class="tag">Pro Estimate • Per Report</span>
-            <div>Client-ready report with risk bands & upsell recommendations.</div>
+            <div>Sales logic, premium upsell scripts, and risk banding + client handoff.</div>
             <div class="price">$25 / report</div>
+            <div class="chips">
+              <span class="chip up">Upsell Playbooks</span>
+              <span class="chip risk">Risk Bands</span>
+              <span class="chip">Client Script</span>
+            </div>
             <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Buy One</a>
+              <div id="paypal-pro-once"></div>
             </div>
           </div>
 
-          <!-- TIER: Pro Unlimited -->
-          <div class="card glowTeal">
+          <!-- Pro Unlimited (monthly) -->
+          <div class="card">
             <span class="tag">Pro Unlimited</span>
-            <div>Unlimited Pro reports, premium upsell playbooks, client handoff scripts, risk scoring.</div>
-            <div class="price">$129 / month</div>
+            <div>Unlimited Pro estimates monthly.</div>
+            <div class="price">$229 / month</div>
+            <div class="chips">
+              <span class="chip up">All Pro Features</span>
+              <span class="chip">Priority</span>
+            </div>
             <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Upgrade</a>
+              <div id="paypal-pro-month"></div>
             </div>
           </div>
 
-          <!-- TIER: Premium Sales -->
-          <div class="card glowGold">
-            <span class="tag">Premium Sales</span>
-            <div>Everything in Pro Unlimited + Sales University & Jr–Pro training + Docs (Field Guides/Templates).</div>
-            <div class="price">$189 / month</div>
+          <!-- Sales Insight Bundle -->
+          <div class="card">
+            <span class="tag">Sales Insight Bundle</span>
+            <div>Unlimited docs + Pro estimates + advanced sales insights.</div>
+            <div class="price">$459 / month</div>
+            <div class="chips">
+              <span class="chip up">Insights</span>
+              <span class="chip">Docs Unlimited</span>
+              <span class="chip risk">Advanced Banding</span>
+            </div>
             <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Enroll</a>
+              <div id="paypal-insight"></div>
             </div>
           </div>
 
-          <!-- TIER: Access All Pro -->
-          <div class="card glowRoyal">
-            <span class="tag">Access All Pro</span>
-            <div>Unlimited everything: Analyses, Pro Reports, Sales Insights, Docs. Priority response + early unlocks.</div>
-            <div class="price">$249 / month</div>
-            <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Go All-In</a>
-            </div>
-          </div>
-
-          <!-- TIER: Founder Pack -->
-          <div class="card glowFounder">
-            <span class="tag">Founder Pack • Lifetime (10 spots)</span>
-            <div>Lifetime access to all tiers + beta privileges + founding member listing.</div>
-            <div class="price">$350 one-time</div>
-            <div class="btn-row">
-              <a class="btn" href="https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU" target="_blank" rel="noopener">Claim a Slot</a>
-            </div>
-          </div>
-
-          <!-- PORTALS -->
+          <!-- Portals -->
           <div class="card">
             <span class="tag">Portals</span>
             <div class="btn-row">
               <button class="btn" id="btnSalesUPortal">Sales University</button>
-              <button class="btn" id="btnDocsPortal">Docs Portal</button>
-              <button class="btn" id="btnJrPro">Jr–Pro Training</button>
+              <button class="btn" id="btnDocsPortal">Docs & Field Guides</button>
             </div>
             <div style="margin-top:8px">Best Practices • Field Guides • Templates</div>
-            <div style="margin-top:6px;color:var(--amber)">💡 Early testers unlock Founder perks — limited to 10 lifetime slots.</div>
           </div>
-
         </div>
       </div>
     </div>
@@ -317,449 +285,470 @@
 
   <div class="footer">Powered by Cardinal-Garage_MND Inc.</div>
 
+<!-- PayPal Hosted Buttons SDK -->
+<script
+  src="https://www.paypal.com/sdk/js?client-id=BAAgXonbH0yUmJj_xSSeLh_w8p-DJ9TonsElCjBeVs8qg5g-Mr_jJ34rNAHR879Z39mEgd9RjyojPdWaF0&components=hosted-buttons&enable-funding=venmo&currency=USD">
+</script>
+
 <script>
 (() => {
-  /* ========= CONFIG ========= */
-  const API = (location.hostname.includes("localhost")||location.hostname.includes("127.0.0.1"))
-    ? "http://localhost:3001"
-    : "https://cardinalgaragepro.com";
+/* ========= CONFIG ========= */
+const API = (location.hostname.includes("localhost")||location.hostname.includes("127.0.0.1"))
+  ? "http://localhost:3001"
+  : "https://cardinalgaragepro.com";
 
-  // Single working payment URL (replace later with real per-tier URLs if desired)
-  const PAYPAL_URL = "https://www.paypal.com/ncp/payment/MVWW6VPEHJKKU";
+// Hosted Button IDs (create/edit in your PayPal dashboard if you want unique SKUs)
+const PAYPAL_IDS = {
+  unlimited: "WJ3K9A7EXAMPLE",   // placeholder id
+  pro_once:  "6H4D2B1EXAMPLE",   // placeholder id
+  pro_month: "AB12CD34EXAMPLE",  // placeholder id
+  insight:   "Z9Y8X7W6EXAMPLE"   // placeholder id
+};
 
-  /* ========= ELEMENTS ========= */
-  const el = {
-    // top
-    btnFull: qs('#btnFull'),
-    btnGarage: qs('#btnGarage'),
-    garage: qs('#garage'),
-    gClose: qs('#gClose'),
-    founderBook: qs('#founderBook'),
-    btnSalesUPortal: qs('#btnSalesUPortal'),
-    btnDocsPortal: qs('#btnDocsPortal'),
-    btnJrPro: qs('#btnJrPro'),
-    // lang
-    langEn: qs('#langEn'), langEs: qs('#langEs'), langPt: qs('#langPt'),
-    // boot & dedication
-    boot: qs('#boot'), b1: qs('#b1'), b2: qs('#b2'), b3: qs('#b3'), b4: qs('#b4'), b5: qs('#b5'), wake: qs('#wake'),
-    dedOverlay: qs('#dedOverlay'),
-    // main
-    midHint: qs('#midHint'),
-    btnUpload: qs('#btnUpload'), btnCamera: qs('#btnCamera'), btnAnalyze: qs('#btnAnalyze'),
-    preview: qs('#preview'), previewImg: qs('#previewImg'), edgeGlow: qs('#edgeGlow'), tips: qs('#tips'),
-    // voice / controls
-    btnTalk: qs('#btnTalk'), btnSend: qs('#btnSend'), btnClearLog: qs('#btnClearLog'),
-    hintTalk: qs('#hintTalk'),
-    orb: qs('#orb'),
-    // toast
-    toast: qs('#toast'), toastBody: qs('#toastBody'), btnExportTxt: qs('#btnExportTxt'), btnExportLogs: qs('#btnExportLogs'), btnOpenGarage: qs('#btnOpenGarage')
-  };
+// Utility to mount PayPal hosted buttons if an id is set
+function mountHostedButton(containerId, hostedButtonId){
+  if(!hostedButtonId) return;
+  if(!window.paypal || !paypal.HostedButtons){ return; }
+  try{
+    paypal.HostedButtons({
+      hostedButtonId
+    }).render("#"+containerId);
+  }catch(e){ console.warn("PayPal render failed for", containerId, e); }
+}
 
-  /* ========= STATE ========= */
-  const STATE = {
-    lang: localStorage.getItem('herohud_lang') || 'en',
-    audioEnabled: false,
-    uploadsToday: getUploadsToday(),
-    accessUnlocked: localStorage.getItem('herohud_access_unlocked')==='1',
-    demoUsed: localStorage.getItem('herohud_demo_used')==='1',
-    logs: loadLogs(),
-    lastSummary: "", lastRecommendation: "", lastCost: "", lastRisks: [], lastUpsells: [],
-    analyzing: false,
-    camStream: null, camVideo: null, capBtn: null,
-    activeUtter: null,
-    // voice in
-    rec: null, listening: false, lastTranscript: "", idleTimer: null
-  };
+/* ========= ELEMENTS ========= */
+const el = {
+  // top
+  btnFull: qs('#btnFull'),
+  btnGarage: qs('#btnGarage'),
+  garage: qs('#garage'),
+  gClose: qs('#gClose'),
+  founderBook: qs('#founderBook'),
+  btnSalesUPortal: qs('#btnSalesUPortal'),
+  btnDocsPortal: qs('#btnDocsPortal'),
+  // lang
+  langEn: qs('#langEn'), langEs: qs('#langEs'), langPt: qs('#langPt'),
+  // boot
+  boot: qs('#boot'), b1: qs('#b1'), b2: qs('#b2'), b3: qs('#b3'), b4: qs('#b4'), b5: qs('#b5'),
+  wake: qs('#wake'), ded: qs('#ded'),
+  // main
+  btnUpload: qs('#btnUpload'), btnCamera: qs('#btnCamera'), btnAnalyze: qs('#btnAnalyze'),
+  preview: qs('#preview'), previewImg: qs('#previewImg'), edgeGlow: qs('#edgeGlow'), tips: qs('#tips'),
+  // talk
+  btnTalk: qs('#btnTalk'), btnSend: qs('#btnSend'),
+  // orb / toast
+  orb: qs('#orb'), toast: qs('#toast'), toastBody: qs('#toastBody'),
+  btnExportTxt: qs('#btnExportTxt'), btnExportLogs: qs('#btnExportLogs'),
+  btnOpenGarage: qs('#btnOpenGarage')
+};
 
-  /* ========= UTIL ========= */
-  function qs(s){ return document.querySelector(s); }
-  function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
-  function nowKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}` }
-  function getUploadsToday(){
-    const key = localStorage.getItem('herohud_uploads_key');
-    const count = Number(localStorage.getItem('herohud_uploads_count')||0);
-    const today = nowKey();
-    return key===today?count:0;
-  }
-  function bumpUploads(){
-    const today = nowKey();
-    localStorage.setItem('herohud_uploads_key', today);
-    const n = STATE.uploadsToday+1;
-    localStorage.setItem('herohud_uploads_count', String(n));
-    STATE.uploadsToday = n;
-  }
-  function log(kind, payload){ STATE.logs.entries.push({ t:Date.now(), kind, payload }); localStorage.setItem('herohud_logs', JSON.stringify(STATE.logs)); }
-  function loadLogs(){ const raw=localStorage.getItem('herohud_logs'); return raw?JSON.parse(raw):{ startedAt: Date.now(), entries: [] } }
-  function dateStamp(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; }
-  function downloadTxt(filename, text){ const blob=new Blob([text],{type:"text/plain"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
-  function clearTips(){ el.tips.innerHTML=''; }
+/* ========= STATE ========= */
+const STATE = {
+  lang: localStorage.getItem('herohud_lang') || 'en',
+  audioEnabled: false,
+  uploadsToday: getUploadsToday(),
+  accessUnlocked: localStorage.getItem('herohud_access_unlocked')==='1',
+  logs: loadLogs(),
+  lastSummary: "", lastRecommendation: "", lastCost: "", lastRisks: [], lastUpsells: [],
+  analyzing: false,
+  camStream: null, camVideo: null, capBtn: null,
+  activeUtter: null,
+  rec: null, recActive: false, recText: "", idleTimer: null, greeted: false, demoCompleted: localStorage.getItem('herohud_demo_used')==='1'
+};
 
-  /* ========= LANGUAGE ========= */
-  function setLang(l){
-    STATE.lang = l; localStorage.setItem('herohud_lang', l);
-    el.langEn.classList.toggle('on', l==='en'); el.langEs.classList.toggle('on', l==='es'); el.langPt.classList.toggle('on', l==='pt');
-  }
-  el.langEn.onclick=()=>setLang('en');
-  el.langEs.onclick=()=>setLang('es');
-  el.langPt.onclick=()=>setLang('pt');
-  setLang(STATE.lang);
+/* ========= UTIL ========= */
+function qs(s){ return document.querySelector(s); }
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function nowKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}` }
+function getUploadsToday(){
+  const key = localStorage.getItem('herohud_uploads_key');
+  const count = Number(localStorage.getItem('herohud_uploads_count')||0);
+  const today = nowKey();
+  return key===today?count:0;
+}
+function bumpUploads(){
+  const today = nowKey();
+  localStorage.setItem('herohud_uploads_key', today);
+  const n = STATE.uploadsToday+1;
+  localStorage.setItem('herohud_uploads_count', String(n));
+  STATE.uploadsToday = n;
+}
+function log(kind, payload){ STATE.logs.entries.push({ t:Date.now(), kind, payload }); localStorage.setItem('herohud_logs', JSON.stringify(STATE.logs)); }
+function loadLogs(){ const raw=localStorage.getItem('herohud_logs'); return raw?JSON.parse(raw):{ startedAt: Date.now(), entries: [] } }
+function dateStamp(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; }
+function downloadTxt(filename, text){ const blob=new Blob([text],{type:"text/plain"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
 
-  /* ========= CINEMATIC BOOT ========= */
-  (async function bootSeq(){
-    await wait(300); el.b1.classList.add('show');
-    await wait(400); el.b2.classList.add('show');
-    await wait(400); el.b3.classList.add('show');
-    await wait(400); el.b4.classList.add('show');
-    await wait(400); el.b5.classList.add('show');
-    await wait(500); el.wake.classList.add('show');
-  })();
+/* ========= LANGUAGE ========= */
+function setLang(l){
+  STATE.lang = l; localStorage.setItem('herohud_lang', l);
+  el.langEn.classList.toggle('on', l==='en'); el.langEs.classList.toggle('on', l==='es'); el.langPt.classList.toggle('on', l==='pt');
+}
+el.langEn.onclick=()=>setLang('en');
+el.langEs.onclick=()=>setLang('es');
+el.langPt.onclick=()=>setLang('pt');
+setLang(STATE.lang);
 
-  // After Tap to Wake → show dedication for ~3.2s → then intro → close boot
-  el.wake.onclick = async ()=>{
-    STATE.audioEnabled = true;
-    // Dedication
-    el.dedOverlay.style.display='grid';
-    await wait(3200);
-    el.dedOverlay.style.display='none';
-    // Intro voice
-    speakAddieIntro();
-    // Idle nudge in 10s if no upload yet
-    scheduleIdleNudge();
-    // Close boot
-    el.boot.style.display='none';
-  };
+/* ========= CINEMATIC BOOT ========= */
+(async function bootSeq(){
+  await wait(300); el.b1.classList.add('show');
+  await wait(400); el.b2.classList.add('show');
+  await wait(400); el.b3.classList.add('show');
+  await wait(400); el.b4.classList.add('show');
+  await wait(400); el.b5.classList.add('show');
+  await wait(500); el.wake.classList.add('show');
+})();
+el.ded.style.opacity = 0; // dedication appears later
 
-  /* ========= IDLE NUDGE (10s after intro if no photo) ========= */
-  function scheduleIdleNudge(){
-    if(STATE.idleTimer) clearTimeout(STATE.idleTimer);
-    STATE.idleTimer = setTimeout(()=>{
-      if(!el.previewImg.src){ // no image yet
-        speak( i18n("C’mon, let’s get to work—upload a photo. Jared is ready to get you selling!",
-                    "Vamos, manos a la obra: sube una foto. ¡Jared está listo para ayudarte a vender!",
-                    "Bora lá — envie uma foto. O Jared está pronto para te ajudar a vender!"),
-              {female:true,rate:1.04,pitch:1.12});
-      }
-    }, 10000);
-  }
-
-  /* ========= SPEECH (speak out) ========= */
-  function stopSpeech(){ if(STATE.activeUtter){ window.speechSynthesis.cancel(); STATE.activeUtter=null; el.orb.className='idle'; } }
-  el.orb.onclick = stopSpeech;
-
-  function pickVoice(preferFemale=true){
-    const voices = window.speechSynthesis.getVoices() || [];
-    const us = voices.filter(v=>/en-us/i.test(v.lang) || /en_/i.test(v.lang));
-    const femaleNames = ["Google US English", "Samantha", "Jenny", "Aria", "Amelia", "Sara", "Alloy", "Nova", "Olivia", "Emma"];
-    const maleNames   = ["Daniel", "Alex", "Matthew", "Guy", "Christopher"];
-    if(preferFemale){
-      return us.find(v=>femaleNames.includes(v.name)) || us.find(v=>/samantha|jenny|aria|amelia|nova|olivia|emma|female/i.test(v.name)) || us[0] || voices[0];
-    }else{
-      return us.find(v=>maleNames.includes(v.name)) || us.find(v=>/daniel|alex|guy|matthew|male/i.test(v.name)) || us[0] || voices[0];
-    }
-  }
-  window.speechSynthesis.onvoiceschanged = ()=>window.speechSynthesis.getVoices();
-
-  function speak(text,{female=true,rate=1.02,pitch=1.08,onend}={}){
-    if(!STATE.audioEnabled){ if(onend) onend(); return; }
-    stopSpeech();
-    try{
-      const u = new SpeechSynthesisUtterance(text);
-      const v = pickVoice(female);
-      if(v) u.voice = v;
-      u.rate = rate; u.pitch = pitch;
-      u.onend = ()=>{ STATE.activeUtter=null; el.orb.className='idle'; onend && onend(); };
-      u.onerror = u.onend;
-      STATE.activeUtter = u;
-      el.orb.className='speaking';
-      window.speechSynthesis.speak(u);
-      log('voice', { text, female, lang: STATE.lang });
-    }catch{ onend && onend(); }
-  }
-
-  function speakAddieIntro(){
-    const baseEn = "Welcome to Cardinal’s Garage. I’m Addie — your personal sales coach. This is where a photo becomes a plan. Upload or open the camera, tap Analyze, and Jared will handle tools, timing, risks, and pricing while I guide your sales moves.";
-    const baseEs = " Bienvenidos. Hola — soy Addie, tu coach de ventas. Aquí una foto se convierte en un plan. Sube una imagen o abre la cámara, pulsa Analizar, y Jared cubrirá herramientas, tiempos, riesgos y precios mientras yo guío tus jugadas de venta.";
-    const basePt = " Olá — eu sou a Addie, sua coach de vendas. Aqui uma foto vira um plano. Envie uma imagem ou abra a câmera, toque Analisar, e o Jared cuida de ferramentas, prazos, riscos e preços enquanto eu apoio suas vendas.";
-    let line = baseEn;
-    if(STATE.lang==='es') line = "Hello! Hola." + baseEs;
-    if(STATE.lang==='pt') line = "Hello! Olá." + basePt;
-    speak(line,{female:true,rate:1.05,pitch:1.10});
-  }
-
-  /* ========= TALK (speech recognition) ========= */
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  if(SR){
-    STATE.rec = new SR();
-    STATE.rec.continuous = false;
-    STATE.rec.interimResults = true;
-    STATE.rec.lang = (STATE.lang==='es') ? 'es-ES' : (STATE.lang==='pt') ? 'pt-PT' : 'en-US';
-    STATE.rec.onresult = (e)=>{
-      let final = "", interim = "";
-      for(let i=0; i<e.results.length; i++){
-        const res = e.results[i];
-        if(res.isFinal) final += res[0].transcript;
-        else interim += res[0].transcript;
-      }
-      const text = final || interim;
-      STATE.lastTranscript = text.trim();
-      if(text){ tip('🗣️ '+text,'ok'); }
-    };
-    STATE.rec.onend = ()=>{ STATE.listening = false; el.btnTalk.classList.remove('ghost'); };
-    STATE.rec.onerror = ()=>{ STATE.listening = false; el.btnTalk.classList.remove('ghost'); };
-  }
-
-  el.btnTalk.addEventListener('click', ()=>{
-    if(!SR){ tip(i18n('Voice input not supported on this device.','Entrada de voz no soportada.','Sem suporte de voz neste dispositivo.'),'risk'); return; }
-    if(STATE.listening){
-      // stop listening → ready to send
-      try{ STATE.rec.stop(); }catch{}
-      STATE.listening = false;
-      el.btnTalk.classList.remove('ghost');
-      el.hintTalk.textContent = i18n('Tap Send to forward to Jared','Toca Enviar para pasar a Jared','Toque Enviar para encaminhar ao Jared');
-    }else{
-      // start listening
-      STATE.lastTranscript = "";
-      STATE.rec.lang = (STATE.lang==='es') ? 'es-ES' : (STATE.lang==='pt') ? 'pt-PT' : 'en-US';
-      try{ STATE.rec.start(); STATE.listening=true; }catch{}
-      el.btnTalk.classList.add('ghost');
-      el.hintTalk.textContent = i18n('Listening… Tap again to stop','Escuchando… toca de nuevo para parar','Ouvindo… toque de novo para parar');
-    }
+el.wake.onclick=async ()=>{
+  STATE.audioEnabled = true;
+  speakAddieIntro(() => {
+    // After greeting completes, show dedication for ~3–3.5s, then fade
+    showDedicationThenIdlePrompt();
   });
+  el.boot.style.display='none';
+};
 
-  // Send voice prompt to Jared (text inference)
-  el.btnSend.addEventListener('click', async ()=>{
-    if(!STATE.lastTranscript){ tip(i18n('No voice captured yet. Tap to talk first.','Sin voz capturada. Pulsa hablar.','Sem voz capturada. Toque para falar.'),'risk'); return; }
-    const prompt = STATE.lastTranscript;
-    tip('📨 '+i18n('Sending to Jared…','Enviando a Jared…','Enviando ao Jared…'),'ok');
-    stopSpeech();
+async function showDedicationThenIdlePrompt(){
+  // Show dedication
+  el.ded.style.opacity = 1;
+  el.ded.classList.add('show');
+  await wait(3200); // ~3.2s visible
+  el.ded.style.transition = 'opacity .6s ease';
+  el.ded.style.opacity = 0;
 
-    // Try backend text analysis; fallback to on-screen coaching
-    try{
-      const res = await fetch(API+'/analyze-text', {
-        method:'POST',
-        headers:{},
-        body: (()=>{ const fd=new FormData(); fd.append('prompt', prompt); fd.append('lang', STATE.lang); return fd; })()
-      });
-      const data = await res.json();
-
-      const summary = data.summary || i18n('Analysis ready.','Análisis listo.','Análise pronta.');
-      const recommendation = data.recommendation || deriveRecommendation(summary);
-      const risks = Array.isArray(data.risks)?data.risks: (data.risks?String(data.risks).split(/[;,]/):[]);
-      const upsells = Array.isArray(data.upsells)?data.upsells: (data.upsells?String(data.upsells).split(/[;,]/):[]);
-
-      STATE.lastSummary = summary;
-      STATE.lastRecommendation = recommendation;
-      STATE.lastRisks = risks; STATE.lastUpsells = upsells;
-
-      tip('🛠️ '+recommendation,'ok');
-      risks.slice(0,3).forEach(r=> tip('⚠️ '+r.trim(),'risk'));
-      upsells.slice(0,3).forEach(u=> tip('⬆️ '+u.trim(),'up'));
-      speak(summary,{female:false,rate:0.98,pitch:1.0, onend:()=>showToast(summary, recommendation)});
-      log('text_inference',{prompt, data});
-    }catch{
-      // Fallback coaching only
-      const coach = i18n(
-        "Got it. Here’s your sales angle—lead with the visible wins, set expectations on clean-up, and close with a simple tiered offer.",
-        "Entendido. Tu ángulo de venta: lidera con los beneficios visibles, fija expectativas sobre limpieza y cierra con una oferta escalonada.",
-        "Entendi. Seu ângulo: destaque ganhos visíveis, alinhe expectativa de limpeza e feche com oferta em níveis."
-      );
-      tip('🗒️ '+coach,'ok');
-      speak(coach,{female:true,rate:1.04,pitch:1.1});
+  // Start idle reminder ~10s later (if no image loaded yet)
+  STATE.idleTimer = setTimeout(()=>{
+    if(!el.previewImg.src){
+      const msg = idleLine();
+      speak(msg,{female:true,rate:1.04,pitch:1.1});
+      tip(msg,'up');
     }
-  });
+  }, 10000);
+}
 
-  el.btnClearLog.onclick = ()=>{ clearTips(); tip(i18n('Cleared.','Borrado.','Limpado.'),'ok'); };
+/* ========= SPEECH (no overlap) ========= */
+function stopSpeech(){ if(STATE.activeUtter){ window.speechSynthesis.cancel(); STATE.activeUtter=null; el.orb.className='idle'; } }
+el.orb.onclick = stopSpeech; // stop button on orb
 
-  /* ========= FILES / CAMERA ========= */
-  const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='image/*';
-  el.btnUpload.onclick=()=>fileInput.click();
-  fileInput.onchange=()=>{
-    const f=fileInput.files[0]; if(!f) return;
-    const url=URL.createObjectURL(f);
+function pickVoice(preferFemale=true){
+  const voices = window.speechSynthesis.getVoices();
+  if(!voices || !voices.length) return null;
+  const us = voices.filter(v=>/en-us/i.test(v.lang) || /en_/i.test(v.lang));
+  const femaleNames = ["Google US English", "Samantha", "Jenny", "Aria", "Amelia", "Sara", "Alloy", "Nova", "Olivia", "Emma"];
+  const maleNames   = ["Daniel", "Alex", "Matthew", "Guy", "Christopher"];
+  if(preferFemale){
+    return us.find(v=>femaleNames.includes(v.name)) || us.find(v=>/samantha|jenny|aria|amelia|nova|olivia|emma|female/i.test(v.name)) || us[0] || voices[0];
+  }else{
+    return us.find(v=>maleNames.includes(v.name)) || us.find(v=>/daniel|alex|guy|matthew|male/i.test(v.name)) || us[0] || voices[0];
+  }
+}
+window.speechSynthesis.onvoiceschanged = ()=>window.speechSynthesis.getVoices();
+
+function speak(text,{female=true,rate=1.02,pitch=1.08,onend}={}){
+  if(!STATE.audioEnabled) return onend && onend();
+  stopSpeech();
+  try{
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice(female);
+    if(v) u.voice = v;
+    u.rate = rate; u.pitch = pitch;
+    u.onend = ()=>{ STATE.activeUtter=null; el.orb.className='idle'; onend && onend(); };
+    u.onerror = u.onend;
+    STATE.activeUtter = u;
+    el.orb.className='speaking';
+    window.speechSynthesis.speak(u);
+    log('voice', { text, female, lang: STATE.lang });
+  }catch{ onend && onend(); }
+}
+
+function greetLine(){
+  const en = "Welcome to Cardinal’s Garage. I’m Addie — your personal sales coach. This is where a photo becomes a plan. Upload or open the camera, tap Analyze, and Jared will handle tools, timing, risks, and pricing while I guide your sales moves.";
+  const es = "Bienvenidos. Soy Addie, tu coach de ventas. Sube una imagen o abre la cámara, pulsa Analizar, y Jared verá herramientas, tiempos, riesgos y precios mientras yo guío tus jugadas.";
+  const pt = "Olá. Eu sou a Addie, sua coach de vendas. Envie uma imagem ou abra a câmera, toque Analisar, e o Jared cuida de ferramentas, prazos, riscos e preços enquanto eu apoio suas vendas.";
+  return STATE.lang==='es'?es: STATE.lang==='pt'?pt: en;
+}
+function idleLine(){
+  const en = "C’mon, let’s get to work — upload a photo, Jared is ready to get you selling!";
+  const es = "Vamos a trabajar — sube una foto, ¡Jared está listo para ayudarte a vender!";
+  const pt = "Vamos trabalhar — envie uma foto, o Jared está pronto para te ajudar a vender!";
+  return STATE.lang==='es'?es: STATE.lang==='pt'?pt: en;
+}
+function passToJaredLine(){
+  const en = "Got it — passing this over to Jared for recommendations, risks, and upsell angles.";
+  const es = "Listo — paso esto a Jared para recomendaciones, riesgos y oportunidades de upsell.";
+  const pt = "Entendido — vou passar para o Jared para recomendações, riscos e oportunidades de upsell.";
+  return STATE.lang==='es'?es: STATE.lang==='pt'?pt: en;
+}
+function speakAddieIntro(onend){
+  speak(greetLine(),{female:true,rate:1.05,pitch:1.10,onend});
+}
+
+/* ========= TALK TO ADDIE (real voice input) ========= */
+let holding = false;
+
+function supportSpeechIn(){
+  return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+}
+function ensureRecognizer(){
+  if(STATE.rec) return true;
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!Ctor) return false;
+  const rec = new Ctor();
+  rec.lang = (STATE.lang==='es'?'es-ES': STATE.lang==='pt'?'pt-BR':'en-US');
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onresult = (e)=>{
+    let txt = '';
+    for (let i=0;i<e.results.length;i++){
+      txt += e.results[i][0].transcript + ' ';
+    }
+    STATE.recText = txt.trim();
+    log('speech_partial',{text:STATE.recText});
+  };
+  rec.onend = ()=>{ STATE.recActive=false; };
+  rec.onerror = ()=>{ STATE.recActive=false; };
+  STATE.rec = rec;
+  return true;
+}
+
+el.btnTalk.addEventListener('pointerdown', e=>{
+  e.preventDefault(); e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId);
+  holding = true;
+  tip('Listening… (release to stop)','ok');
+  if(supportSpeechIn() && ensureRecognizer()){
+    try{ STATE.recActive=true; STATE.recText=""; STATE.rec.start(); }catch{}
+  } else {
+    tip('Voice input not supported on this device/browser.','risk');
+  }
+});
+el.btnTalk.addEventListener('pointerup', e=>{
+  e.preventDefault();
+  if(!holding) return; holding=false;
+  if(STATE.rec && STATE.recActive){ try{ STATE.rec.stop(); }catch{} }
+  tip('Voice captured. Tap Send to coach with Addie.','up');
+});
+el.btnTalk.addEventListener('pointercancel', ()=>{ holding=false; if(STATE.rec && STATE.recActive){ try{ STATE.rec.stop(); }catch{} } });
+
+el.btnSend.addEventListener('click', ()=>{
+  if(!STATE.recText){ tip('No voice captured. Press & hold “Tap & Hold” to speak.','risk'); return; }
+  const text = STATE.recText;
+  STATE.recText = "";
+  // Addie coaches, then passes to Jared
+  speak(passToJaredLine(),{female:true,rate:1.04,pitch:1.1});
+  tip('Addie: '+passToJaredLine(),'ok');
+  // You can POST text to backend if you want Addie → Jared text analysis:
+  // fetch(`${API}/coach`, {method:'POST', headers:{}, body:...})
+});
+
+/* ========= FILES / CAMERA ========= */
+const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='image/*';
+el.btnUpload.onclick=()=>fileInput.click();
+fileInput.onchange=()=>{
+  const f=fileInput.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  showImage(url);
+  bumpUploads();
+  tip(i18n('Photo ready — tap Analyze.', 'Foto lista — pulsa Analizar.', 'Foto pronta — toque Analisar.'), 'ok');
+  log('upload',{name:f.name,size:f.size});
+  if(STATE.idleTimer){ clearTimeout(STATE.idleTimer); STATE.idleTimer=null; }
+};
+
+el.btnCamera.onclick = openCamera;
+async function openCamera(){
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){ tip(i18n('Camera not supported.', 'Cámara no soportada.', 'Câmera não suportada.'), 'risk'); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user" } });
+    STATE.camStream = stream;
+    STATE.camVideo = document.createElement('video');
+    STATE.camVideo.playsInline=true; STATE.camVideo.muted=true; STATE.camVideo.srcObject=stream; await STATE.camVideo.play();
+    el.preview.style.display='block'; replacePreview(STATE.camVideo); ensureCapBtn();
+    tip(i18n('Camera online — capture when ready.', 'Cámara lista — captura cuando quieras.', 'Câmera ativa — capture quando quiser.'), 'ok');
+    if(STATE.idleTimer){ clearTimeout(STATE.idleTimer); STATE.idleTimer=null; }
+  }catch{ tip(i18n('Camera access denied.', 'Acceso a cámara denegado.', 'Acesso à câmera negado.'), 'risk'); }
+}
+function ensureCapBtn(){
+  if(STATE.capBtn) STATE.capBtn.remove();
+  STATE.capBtn = document.createElement('button');
+  STATE.capBtn.textContent = i18n('Capture','Capturar','Capturar');
+  STATE.capBtn.className = 'btn capBtn';
+  STATE.capBtn.style.userSelect='none';
+  el.preview.appendChild(STATE.capBtn);
+  STATE.capBtn.onclick = async ()=>{
+    if(!STATE.camVideo) return;
+    const canvas=document.createElement('canvas');
+    canvas.width=STATE.camVideo.videoWidth||1280; canvas.height=STATE.camVideo.videoHeight||720;
+    const g=canvas.getContext('2d'); g.drawImage(STATE.camVideo,0,0,canvas.width,canvas.height);
+    const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
+    if(STATE.camStream){ STATE.camStream.getTracks().forEach(t=>t.stop()); STATE.camStream=null; }
+    STATE.camVideo=null;
+    const url=URL.createObjectURL(blob);
     showImage(url);
     bumpUploads();
-    tip(i18n('Photo ready — tap Analyze.','Foto lista — pulsa Analizar.','Foto pronta — toque Analisar.'), 'ok');
-    log('upload',{name:f.name,size:f.size});
-    fadeMidHint();
+    tip(i18n('Captured — tap Analyze.', 'Capturado — pulsa Analizar.', 'Capturado — toque Analisar.'),'ok');
+    log('camera_capture',{size:blob.size});
   };
+}
+function showImage(url){
+  el.previewImg.src=url; el.preview.style.display='block'; replacePreview(el.previewImg);
+  // fade out midTag as preview shows (clean the dead space)
+  const mid = document.querySelector('.midTag'); if(mid){ mid.style.opacity=.25; }
+}
+function replacePreview(node){ const old=el.preview.querySelector('img,video'); if(old) old.replaceWith(node); else el.preview.prepend(node); }
 
-  el.btnCamera.onclick = openCamera;
-  async function openCamera(){
-    if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){ tip(i18n('Camera not supported.','Cámara no soportada.','Câmera não suportada.'), 'risk'); return; }
-    try{
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"environment" } });
-      STATE.camStream = stream;
-      STATE.camVideo = document.createElement('video');
-      STATE.camVideo.playsInline=true; STATE.camVideo.muted=true; STATE.camVideo.srcObject=stream; await STATE.camVideo.play();
-      el.preview.style.display='block'; replacePreview(STATE.camVideo); ensureCapBtn();
-      tip(i18n('Camera online — capture when ready.','Cámara lista — captura cuando quieras.','Câmera ativa — capture quando quiser.'), 'ok');
-      fadeMidHint();
-    }catch{ tip(i18n('Camera access denied.','Acceso a cámara denegado.','Acesso à câmera negado.'), 'risk'); }
+/* ========= PAYWALL (after successful first analyze only) ========= */
+function canAnalyze(){
+  if(STATE.accessUnlocked) return true;
+  // Allow one successful analyze (sets demo_used); after that, paywall
+  const used = localStorage.getItem('herohud_demo_used')==='1';
+  return !used;
+}
+function showPaywall(){
+  modal(`
+    <h3 style="margin:0 0 8px;color:var(--mintL)">Access Limit Reached</h3>
+    <p class="sub" style="margin:0 0 12px;opacity:.85">${i18n('Unlock Access+ for unlimited analyses (exports stay free TXT).','Desbloquea Access+ para análisis ilimitados (exportaciones TXT gratis).','Desbloqueie o Access+ para análises ilimitadas (exportações TXT grátis).')}</p>
+    <div class="btn-row" style="justify-content:center">
+      <div id="paypal-unlimited-modal"></div>
+      <button class="btn" id="pwClose">${i18n('Close','Cerrar','Fechar')}</button>
+    </div>
+  `, (root)=>{
+    const close = root.querySelector('#pwClose');
+    if(close) close.onclick=()=>root.remove();
+    // mount hosted button inside modal
+    mountHostedButton('paypal-unlimited-modal', PAYPAL_IDS.unlimited);
+  });
+}
+
+/* ========= ANALYZE ========= */
+el.btnAnalyze.onclick = async ()=>{
+  if(!el.previewImg.src){ tip(i18n('Upload or capture a photo first.','Sube o captura una foto primero.','Envie ou capture uma foto primeiro.'),'risk'); return; }
+  // If demo already used, show paywall
+  if(!canAnalyze()){ showPaywall(); return; }
+
+  STATE.analyzing=true; clearTips(); el.preview.classList.add('glow-on','analyzing'); stopSpeech();
+  speak(i18n('Analyzing photo — one moment…','Analizando foto — un momento…','Analisando foto — um instante…'),{female:false,rate:0.96,pitch:1.0});
+  log('analyze_start',{});
+
+  try{
+    // Build form
+    const formData=new FormData();
+    const blob=await fetch(el.previewImg.src).then(r=>r.blob());
+    formData.append('file', blob, 'upload.jpg');
+    formData.append('lang', STATE.lang);
+
+    const res=await fetch(API+'/analyze-image',{method:'POST',body:formData});
+    const data=await res.json();
+
+    // expected fields (fallbacks if backend returns only summary/recommendation)
+    const summary = data.summary || i18n('Analysis complete.','Análisis completo.','Análise concluída.');
+    const recommendation = data.recommendation || deriveRecommendation(summary);
+    const cost = data.cost_estimate || i18n('Estimated cost: $—','Costo estimado: $—','Custo estimado: R$—');
+    const risks = Array.isArray(data.risks)?data.risks: (data.risks?String(data.risks).split(/[;,]/):[]);
+    const upsells = Array.isArray(data.upsells)?data.upsells: (data.upsells?String(data.upsells).split(/[;,]/):[]);
+
+    STATE.lastSummary=summary; STATE.lastRecommendation=recommendation; STATE.lastCost=cost;
+    STATE.lastRisks=risks; STATE.lastUpsells=upsells;
+
+    // Visual tips
+    tip('💵 '+cost,'ok');
+    tip('🛠️ '+recommendation,'ok');
+    risks.slice(0,3).forEach(r=> tip('⚠️ '+r.trim(),'risk'));
+    upsells.slice(0,3).forEach(u=> tip('⬆️ '+u.trim(),'up'));
+
+    // Speak the summary (Jared voice)
+    speak(summary,{female:false,rate:0.98,pitch:1.0, onend:()=>showToast(summary, recommendation)});
+
+    // Mark demo used after first successful run (so gating happens next time)
+    if(!localStorage.getItem('herohud_demo_used')) localStorage.setItem('herohud_demo_used','1');
+
+  }catch(e){
+    tip(i18n('Analysis failed. Please try again.','El análisis falló. Inténtalo de nuevo.','A análise falhou. Tente novamente.'),'risk');
+    log('analyze_error',{msg:String(e)});
+  }finally{
+    STATE.analyzing=false; el.preview.classList.remove('analyzing'); el.orb.className='idle';
   }
-  function ensureCapBtn(){
-    if(STATE.capBtn) STATE.capBtn.remove();
-    STATE.capBtn = document.createElement('button');
-    STATE.capBtn.textContent = i18n('Capture','Capturar','Capturar');
-    STATE.capBtn.className = 'btn capBtn';
-    el.preview.appendChild(STATE.capBtn);
-    STATE.capBtn.onclick = async ()=>{
-      if(!STATE.camVideo) return;
-      const canvas=document.createElement('canvas');
-      canvas.width=STATE.camVideo.videoWidth||1280; canvas.height=STATE.camVideo.videoHeight||720;
-      const g=canvas.getContext('2d'); g.drawImage(STATE.camVideo,0,0,canvas.width,canvas.height);
-      const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
-      if(STATE.camStream){ STATE.camStream.getTracks().forEach(t=>t.stop()); STATE.camStream=null; }
-      STATE.camVideo=null;
-      const url=URL.createObjectURL(blob);
-      showImage(url);
-      bumpUploads();
-      tip(i18n('Captured — tap Analyze.','Capturado — pulsa Analizar.','Capturado — toque Analisar.'),'ok');
-      log('camera_capture',{size:blob.size});
-    };
-  }
-  function showImage(url){
-    el.previewImg.src=url; el.preview.style.display='block'; replacePreview(el.previewImg);
-    fadeMidHint();
-  }
-  function replacePreview(node){ const old=el.preview.querySelector('img,video'); if(old) old.replaceWith(node); else el.preview.prepend(node); }
-  function fadeMidHint(){ if(!el.midHint) return; el.midHint.classList.add('fade'); setTimeout(()=>{el.midHint.style.display='none';}, 450); }
+};
 
-  /* ========= PAYWALL (after one successful full analyze) ========= */
-  function canAnalyze(){
-    if(STATE.accessUnlocked) return true;
-    // allow exactly ONE full analyze run; gate on second attempt
-    return !STATE.demoUsed;
-  }
-  function showPaywall(){
-    modal(`
-      <h3 style="margin:0 0 8px;color:var(--mintL)">Access Limit Reached</h3>
-      <p class="sub" style="margin:0 0 12px;opacity:.85">${i18n('Unlock Access+ for unlimited analyses (exports stay free TXT/JSON).','Desbloquea Access+ para análisis ilimitados.','Desbloqueie Access+ para análises ilimitadas.')}</p>
-      <div class="btn-row" style="justify-content:center">
-        <a class="btn" href="${PAYPAL_URL}" target="_blank" rel="noopener">${i18n('Activate Access+','Activar Access+','Ativar Access+')}</a>
-        <button class="btn" id="pwClose">${i18n('Close','Cerrar','Fechar')}</button>
-      </div>
-    `, (root)=>{ root.querySelector('#pwClose').onclick=()=>root.remove(); });
-  }
+function deriveRecommendation(summary){
+  const s=(summary||"").replace(/\s+/g,' ').trim();
+  const first=(s.split(/[.;]/).map(x=>x.trim()).filter(Boolean)[0]||s);
+  return first.length>108?first.slice(0,108)+'…':first;
+}
 
-  /* ========= ANALYZE (image) ========= */
-  el.btnAnalyze.onclick = async ()=>{
-    if(!el.previewImg.src){ tip(i18n('Upload or capture a photo first.','Sube o captura una foto primero.','Envie ou capture uma foto primeiro.'),'risk'); return; }
-    if(!canAnalyze()){ showPaywall(); return; }
+/* ========= TOAST + EXPORTS ========= */
+function showToast(summary,recommendation){
+  const first = (summary||'').split(/[.;]/).map(s=>s.trim()).filter(Boolean)[0] || i18n('Analysis ready.','Análisis listo.','Análise pronta.');
+  const topRec = (recommendation||'').split(/[.;]/).map(s=>s.trim()).filter(Boolean)[0] || '';
+  el.toastBody.textContent = topRec? `${first} • ${topRec}` : first;
+  el.toast.classList.add('show');
+  setTimeout(()=> el.toast.classList.remove('show'), 7000);
+}
+el.btnExportTxt.onclick = ()=>{
+  const tipsTxt=[...document.querySelectorAll('.tip')].map(e=>e.textContent.trim()).join("\n");
+  const text = [
+    "HeroHUD Analysis Log",
+    "====================",
+    "",
+    `Summary: ${STATE.lastSummary}`,
+    `Recommendation: ${STATE.lastRecommendation}`,
+    `Cost: ${STATE.lastCost}`,
+    "",
+    "Risks:",
+    (STATE.lastRisks||[]).map(x=>`- ${x}`).join("\n"),
+    "",
+    "Upsells:",
+    (STATE.lastUpsells||[]).map(x=>`- ${x}`).join("\n"),
+    "",
+    "Screen Tips:",
+    tipsTxt,
+    ""
+  ].join("\n");
+  downloadTxt(`herohud_analysis_${dateStamp()}.txt`, text);
+  log('export_txt',{});
+};
+el.btnExportLogs.onclick = ()=>{ downloadTxt(`herohud_logs_${dateStamp()}.json`, JSON.stringify(STATE.logs,null,2)); };
+el.btnOpenGarage.onclick = ()=> openGarage();
 
-    STATE.analyzing=true; clearTips(); el.preview.classList.add('glow-on'); el.edgeGlow.classList.add('pulse'); stopSpeech();
-    speak(i18n('Analyzing photo — one moment…','Analizando foto — un momento…','Analisando foto — um instante…'),{female:false,rate:0.96,pitch:1.0});
-    log('analyze_start',{});
+/* ========= GARAGE ========= */
+function openGarage(){ el.garage.classList.remove('hidden'); el.garage.style.display='block';
+  // mount PayPal hosted buttons
+  mountHostedButton('paypal-unlimited', PAYPAL_IDS.unlimited);
+  mountHostedButton('paypal-pro-once',  PAYPAL_IDS.pro_once);
+  mountHostedButton('paypal-pro-month', PAYPAL_IDS.pro_month);
+  mountHostedButton('paypal-insight',   PAYPAL_IDS.insight);
+}
+function closeGarage(){ el.garage.style.display='none'; }
+el.btnGarage.onclick=openGarage; el.gClose.onclick=closeGarage;
 
-    try{
-      const formData=new FormData();
-      const blob=await fetch(el.previewImg.src).then(r=>r.blob());
-      formData.append('file', blob, 'upload.jpg');
-      formData.append('lang', STATE.lang);
+el.btnSalesUPortal.onclick=()=> alert(i18n('Sales U portal opening (placeholder).','Abriendo portal de Sales U (placeholder).','Abrindo portal Sales U (placeholder).'));
+el.btnDocsPortal.onclick=()=> alert(i18n('Docs portal opening (placeholder).','Abriendo portal de Documentos (placeholder).','Abrindo portal de Documentos (placeholder).'));
 
-      const res=await fetch(API+'/analyze-image',{method:'POST',body:formData});
-      const data=await res.json();
+/* ========= FULLSCREEN ========= */
+el.btnFull.onclick=()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen().catch(()=>{}); };
 
-      const summary = data.summary || i18n('Analysis complete.','Análisis completo.','Análise concluída.');
-      const recommendation = data.recommendation || deriveRecommendation(summary);
-      const cost = data.cost_estimate || i18n('Estimated cost: $—','Costo estimado: $—','Custo estimado: R$—');
-      const risks = Array.isArray(data.risks)?data.risks: (data.risks?String(data.risks).split(/[;,]/):[]);
-      const upsells = Array.isArray(data.upsells)?data.upsells: (data.upsells?String(data.upsells).split(/[;,]/):[]);
+/* ========= TIPS ========= */
+function tip(text, kind){
+  const t=document.createElement('div'); t.className='tip'; t.textContent=text;
+  if(kind==='ok') t.classList.add('ok'); if(kind==='risk') t.classList.add('risk'); if(kind==='up') t.classList.add('up');
+  el.tips.appendChild(t); requestAnimationFrame(()=>t.classList.add('show'));
+}
+function clearTips(){ el.tips.innerHTML=''; }
 
-      STATE.lastSummary=summary; STATE.lastRecommendation=recommendation; STATE.lastCost=cost;
-      STATE.lastRisks=risks; STATE.lastUpsells=upsells;
+/* ========= MODAL ========= */
+function modal(innerHTML, after){
+  const overlay=document.createElement('div');
+  overlay.style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8);z-index:9999;";
+  overlay.innerHTML=`
+    <div style="background:#0f1916;border:1px solid var(--stroke);padding:1rem 1.3rem;border-radius:16px;text-align:center;max-width:560px;width:min(92vw,560px);color:var(--text);box-shadow:0 0 32px rgba(156,255,224,.28)">
+      ${innerHTML}
+    </div>`;
+  document.body.appendChild(overlay); after && after(overlay);
+}
 
-      tip('💵 '+cost,'ok');
-      tip('🛠️ '+recommendation,'ok');
-      risks.slice(0,3).forEach(r=> tip('⚠️ '+r.trim(),'risk'));
-      upsells.slice(0,3).forEach(u=> tip('⬆️ '+u.trim(),'up'));
+/* ========= i18n helper ========= */
+function i18n(en,es,pt){ return STATE.lang==='es'?es: STATE.lang==='pt'?pt: en; }
 
-      speak(summary,{female:false,rate:0.98,pitch:1.0, onend:()=>showToast(summary, recommendation)});
-
-      // mark demo used after first successful run
-      if(!STATE.demoUsed){ localStorage.setItem('herohud_demo_used','1'); STATE.demoUsed = true; }
-
-    }catch(e){
-      tip(i18n('Analysis failed. Please try again.','El análisis falló. Inténtalo de nuevo.','A análise falhou. Tente novamente.'),'risk');
-      log('analyze_error',{msg:String(e)});
-    }finally{
-      STATE.analyzing=false; el.preview.classList.remove('glow-on'); el.edgeGlow.classList.remove('pulse'); el.orb.className='idle';
-    }
-  };
-
-  function deriveRecommendation(summary){
-    const s=(summary||"").replace(/\s+/g,' ').trim();
-    const first=(s.split(/[.;]/).map(x=>x.trim()).filter(Boolean)[0]||s);
-    return first.length>108?first.slice(0,108)+'…':first;
-  }
-
-  /* ========= TOAST + EXPORTS ========= */
-  function showToast(summary,recommendation){
-    const first = (summary||'').split(/[.;]/).map(s=>s.trim()).filter(Boolean)[0] || i18n('Analysis ready.','Análisis listo.','Análise pronta.');
-    const topRec = (recommendation||'').split(/[.;]/).map(s=>s.trim()).filter(Boolean)[0] || '';
-    el.toastBody.textContent = topRec? `${first} • ${topRec}` : first;
-    el.toast.classList.add('show');
-    setTimeout(()=> el.toast.classList.remove('show'), 7000);
-  }
-  el.btnExportTxt.onclick = ()=>{
-    const tipsTxt=[...document.querySelectorAll('.tip')].map(e=>e.textContent.trim()).join("\n");
-    const text = [
-      "HeroHUD Analysis Log",
-      "====================",
-      "",
-      `Summary: ${STATE.lastSummary}`,
-      `Recommendation: ${STATE.lastRecommendation}`,
-      `Cost: ${STATE.lastCost||''}`,
-      "",
-      "Risks:",
-      (STATE.lastRisks||[]).map(x=>`- ${x}`).join("\n"),
-      "",
-      "Upsells:",
-      (STATE.lastUpsells||[]).map(x=>`- ${x}`).join("\n"),
-      "",
-      "Screen Tips:",
-      tipsTxt,
-      ""
-    ].join("\n");
-    downloadTxt(`herohud_analysis_${dateStamp()}.txt`, text);
-    log('export_txt',{});
-  };
-  el.btnExportLogs.onclick = ()=>{ downloadTxt(`herohud_logs_${dateStamp()}.json`, JSON.stringify(STATE.logs,null,2)); };
-  el.btnOpenGarage.onclick = ()=> openGarage();
-
-  /* ========= GARAGE ========= */
-  function openGarage(){ el.garage.classList.remove('hidden'); el.garage.style.display='block'; }
-  function closeGarage(){ el.garage.style.display='none'; }
-  el.btnGarage.onclick=openGarage; el.gClose.onclick=closeGarage;
-
-  el.btnSalesUPortal.onclick=()=> alert(i18n('Sales U portal opening (placeholder).','Abriendo portal de Sales U (placeholder).','Abrindo portal Sales U (placeholder).'));
-  el.btnDocsPortal.onclick=()=> alert(i18n('Docs portal opening (placeholder).','Abriendo portal de Documentos (placeholder).','Abrindo portal de Documentos (placeholder).'));
-  el.btnJrPro.onclick=()=> alert(i18n('Jr–Pro training portal opening (placeholder).','Abriendo portal Jr–Pro (placeholder).','Abrindo portal Jr–Pro (placeholder).'));
-
-  /* ========= FULLSCREEN ========= */
-  el.btnFull.onclick=()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen().catch(()=>{}); };
-
-  /* ========= TIPS ========= */
-  function tip(text, kind){
-    const t=document.createElement('div'); t.className='tip'; t.textContent=text;
-    if(kind==='ok') t.classList.add('ok'); if(kind==='risk') t.classList.add('risk'); if(kind==='up') t.classList.add('up');
-    el.tips.appendChild(t); requestAnimationFrame(()=>t.classList.add('show'));
-  }
-
-  /* ========= MODAL ========= */
-  function modal(innerHTML, after){
-    const overlay=document.createElement('div');
-    overlay.style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8);z-index:9999;";
-    overlay.innerHTML=`
-      <div style="background:#0f1916;border:1px solid var(--stroke);padding:1rem 1.3rem;border-radius:16px;text-align:center;max-width:560px;width:min(92vw,560px);color:var(--text);box-shadow:0 0 32px rgba(156,255,224,.28)">
-        ${innerHTML}
-      </div>`;
-    document.body.appendChild(overlay); after && after(overlay);
-  }
-
-  /* ========= i18n helper ========= */
-  function i18n(en,es,pt){ return STATE.lang==='es'?es: STATE.lang==='pt'?pt: en; }
-
-})();
+})(); // IIFE end
 </script>
 </body>
 </html>
+
