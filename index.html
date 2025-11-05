@@ -2,478 +2,486 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"/>
 <title>HeroHUD • Upload → Analyze → Send</title>
 <meta name="theme-color" content="#0b1b16" />
 <style>
   :root{
     --bg-top:#0b1b16; --bg-bot:#071219;
-    --mintL:#c7ffe9; --mint:#34D1A0; --aqua:#2FB0E9; --teal:#0E8B67;
+    --mint:#34D1A0; --mintL:#c7ffe9; --aqua:#2FB0E9; --teal:#0E8B67;
     --text:#E9FFF6; --textDim:rgba(233,255,246,.86);
     --glass:rgba(255,255,255,0.06); --stroke:rgba(156,255,224,0.24);
     --ink:#0e1815; --ink2:#0b1411; --warn:#f6bf3a; --ok:#7ef0b2; --bad:#ff7e7e;
     --gold:#f6bf3a;
   }
   html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  *{box-sizing:border-box}
-
-  /* Ambient film */
-  body::before, body::after{content:""; position:fixed; inset:0; pointer-events:none}
-  body::before{
-    background:
-      radial-gradient(120% 90% at 50% 4%, rgba(156,255,224,.10), transparent 46%),
-      radial-gradient(110% 80% at 50% 97%, rgba(47,176,233,.10), transparent 60%);
-    animation:film1 16s ease-in-out infinite alternate; opacity:.9;
-  }
-  body::after{
-    background:
-      linear-gradient( to right, transparent 0%, rgba(156,255,224,.05) 28%, transparent 62%),
-      linear-gradient( to left,  transparent 0%, rgba(47,176,233,.05) 32%, transparent 66%);
-    mix-blend-mode:screen; animation:film2 22s linear infinite; opacity:.55;
-  }
-  @keyframes film1{to{transform:translateY(-1.2%)}}
-  @keyframes film2{to{transform:translateX(-2%)}}
 
   /* Topbar */
-  .topbar{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:50;background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.08));border-bottom:1px solid var(--stroke);backdrop-filter:blur(6px)}
-  .brand{font-weight:900;letter-spacing:.08em;color:var(--mintL)}
-  .menu{display:flex;gap:8px;align-items:center}
-  .pill{border:1px solid var(--stroke);background:var(--glass);color:var(--text);cursor:pointer;border-radius:999px;padding:.45rem .85rem;font-size:12px;box-shadow:0 0 10px rgba(156,255,224,.18)}
+  .top{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:50;background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.08));border-bottom:1px solid var(--stroke);backdrop-filter:blur(6px)}
+  .brand{font-weight:900;letter-spacing:.12em;color:var(--mintL)}
+  .pill{border:1px solid var(--stroke);background:var(--glass);color:var(--text);cursor:pointer;border-radius:999px;padding:.45rem .85rem;font-size:12px;box-shadow:0 0 10px rgba(156,255,224,.18);margin-left:6px}
   .pill:hover{box-shadow:0 0 22px rgba(156,255,224,.35)}
-  .pill.gold { border-color: var(--gold); color: var(--gold); box-shadow:0 0 16px rgba(246,191,58,.22) }
-  .pill.gold:hover { box-shadow:0 0 26px rgba(246,191,58,.45) }
-  .icon { width:14px; height:14px; display:inline-block; vertical-align:-2px; margin-right:6px }
+  .pill.gold{border-color:var(--gold);color:var(--gold);box-shadow:0 0 16px rgba(246,191,58,.22)}
+  .pill.gold:hover{box-shadow:0 0 26px rgba(246,191,58,.45)}
 
-  /* Stage */
-  .wrap{position:fixed;inset:56px 0 72px 0;display:grid;place-items:start center;padding:12px;overflow:auto}
-  .stack{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;max-width:1100px;width:100%}
-  h1{margin:6px 0 2px;letter-spacing:.12em;font-weight:900}
-  .sub{margin:0 0 10px;color:var(--textDim);font-size:13px}
+  /* Layout */
+  .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;padding:72px 12px 86px;max-width:1160px;margin:0 auto}
+  @media (max-width:980px){ .wrap{grid-template-columns:1fr; padding:72px 10px 120px} }
 
-  /* Controls */
-  .btn{appearance:none;border:1px solid var(--mint);background:var(--glass);color:var(--mintL);
-    padding:.75rem 1.15rem;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;
-    backdrop-filter:blur(6px);cursor:pointer;transition:box-shadow .2s,transform .1s;
-    box-shadow:0 0 16px rgba(156,255,224,.14);font-size:12px}
-  .btn:hover{box-shadow:0 0 26px rgba(156,255,224,.42),0 0 24px rgba(47,176,233,.24)}
+  /* Left: Preview */
+  .panel{background:var(--ink);border:1px solid var(--stroke);border-radius:14px;padding:12px;box-shadow:0 0 26px rgba(156,255,224,.1)}
+  .title{font-weight:900;letter-spacing:.1em;margin:2px 0 8px;color:var(--mintL)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .btn{appearance:none;border:1px solid var(--mint);background:var(--glass);color:var(--mintL);padding:.75rem 1.2rem;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;font-size:12px;cursor:pointer;box-shadow:0 0 16px rgba(156,255,224,.14)}
   .btn.gray{border-color:var(--stroke);color:var(--text)}
-  .btn.warn{border-color:var(--warn);color:var(--warn)}
-  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-
-  /* Preview */
-  #preview{display:none;position:relative;width:min(96vw,1100px);aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--stroke);box-shadow:0 0 24px rgba(156,255,224,.14)}
-  #preview img,#preview video{width:100%;height:100%;object-fit:cover}
-  #edgeGlow{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;
-    box-shadow:0 0 28px rgba(156,255,224,.6),inset 0 0 18px rgba(14,139,103,.55);transition:opacity .25s}
-  .wheel{position:absolute;inset:auto auto 10px 10px;background:rgba(0,0,0,.45);border:1px solid var(--stroke);
-    border-radius:999px;padding:.35rem .6rem;font-size:12px;display:flex;gap:.5rem;align-items:center}
-  .mini-spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(156,255,224,.35);border-top-color:var(--mintL);animation:spin 1s linear infinite}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .stage{position:relative;aspect-ratio:16/10;border:1px solid var(--stroke);border-radius:12px;overflow:hidden;background:#071014}
+  #previewImg, #previewVid{width:100%;height:100%;object-fit:cover}
+  .edgeGlow{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;box-shadow:0 0 28px rgba(156,255,224,.6),inset 0 0 18px rgba(14,139,103,.55);transition:opacity .25s}
+  .spin{position:absolute;left:10px;bottom:10px;display:none;align-items:center;gap:.5rem;background:rgba(0,0,0,.45);border:1px solid var(--stroke);border-radius:999px;padding:.35rem .6rem;font-size:12px}
+  .mini{width:14px;height:14px;border-radius:50%;border:2px solid rgba(156,255,224,.35);border-top-color:var(--mintL);animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Modules under photo */
-  .modules{display:grid;gap:10px;margin-top:10px;width:min(96vw,1100px)}
-  @media (min-width: 820px){
-    .modules{grid-template-columns:1fr 1fr}
-  }
-  .card{background:rgba(255,255,255,.06);border:1px solid var(--stroke);backdrop-filter:blur(8px);border-radius:12px;padding:10px;text-align:left;box-shadow:0 0 18px rgba(156,255,224,.18)}
-  .card h3{margin:.2rem 0 .4rem;font-size:14px;letter-spacing:.08em}
-  .hint{font-size:12px;color:var(--textDim)}
-  .locked{opacity:.65}
-  .kpi{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
-  .tag{display:inline-block;border:1px solid var(--mint);color:var(--mintL);padding:.15rem .45rem;border-radius:999px;font-size:11px}
-  .price{font-weight:900;font-size:18px}
-  .risk-low{color:var(--ok)} .risk-med{color:var(--warn)} .risk-high{color:var(--bad)}
+  .tips{margin-top:8px;display:grid;gap:6px}
+  .tip{background:rgba(255,255,255,.05);border:1px solid var(--stroke);border-radius:10px;padding:.5rem .6rem;font-size:13px;color:var(--textDim);opacity:0;transform:translateY(8px);transition:.45s}
+  .tip.show{opacity:1;transform:translateY(0)}
 
-  /* Voice orb */
-  #voiceOrb{position:fixed;left:18px;bottom:88px;width:54px;height:54px;border-radius:999px;border:1px solid var(--mint);
-    background:radial-gradient(circle at 60% 40%, rgba(156,255,224,.25), rgba(47,176,233,.12));box-shadow:0 0 16px rgba(156,255,224,.25);z-index:60;display:grid;place-items:center;cursor:pointer}
-  #voiceOrb.idle{box-shadow:0 0 10px rgba(156,255,224,.2)}
-  #voiceOrb.listening{animation:pulse 1.4s ease-in-out infinite}
-  #voiceOrb.speaking{box-shadow:0 0 20px rgba(156,255,224,.45), 0 0 28px rgba(47,176,233,.35)}
-  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-  #listenText{position:fixed;bottom:150px;left:50%;transform:translateX(-50%) translateY(10px);font-size:13px;color:var(--mint);opacity:0;transition:opacity .3s, transform .3s;z-index:61}
-  #listenText.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* Right: Estimate sheet */
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .field{border:1px solid var(--stroke);background:rgba(255,255,255,.04);border-radius:10px;padding:.6rem .65rem;color:var(--text);font-size:14px;width:100%}
+  .select{border:1px solid var(--stroke);background:rgba(255,255,255,.04);border-radius:10px;padding:.52rem .65rem;color:var(--text);font-size:14px}
+  .meter{display:flex;align-items:center;gap:8px}
+  .bar{height:10px;flex:1;border-radius:999px;background:#2a3b36;overflow:hidden;border:1px solid var(--stroke)}
+  .fill{height:100%;width:40%;background:linear-gradient(90deg,var(--aqua),var(--mint));transition:width .4s}
+  .warn{background:linear-gradient(90deg,#c98d2a,#f6bf3a)}
+  .risk{background:linear-gradient(90deg,#bf3a3a,#ff7e7e)}
 
-  /* Footer pills */
-  .footer{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  .hidden{display:none}
+  .note{font-size:12px;color:var(--textDim);margin-top:6px}
+  .total{margin-top:8px;border-top:1px solid var(--stroke);padding-top:8px;font-weight:900;letter-spacing:.06em}
+
+  /* Footer actions (gold icons) */
+  .foot{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:60}
+  .icon{width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:6px}
+
+  /* Garage */
+  .garage{position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.78);display:none;z-index:80}
+  .door{max-width:1100px;margin:16px auto;background:var(--ink2);border:1px solid var(--stroke);border-radius:16px;box-shadow:0 0 40px rgba(0,0,0,.5);padding:16px}
+  .gTitle{font-weight:900;letter-spacing:.14em;color:var(--mintL);margin:0 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:10px}
+  @media(max-width:1100px){ .cards{grid-template-columns:repeat(2,minmax(220px,1fr))} }
+  @media(max-width:560px){ .cards{grid-template-columns:1fr} }
+  .card{position:relative;background:#0e1815;border:1px solid var(--stroke);border-radius:14px;padding:12px 12px 14px}
+  .tag{display:inline-block;border:1px solid var(--mint);color:var(--mintL);padding:.2rem .5rem;border-radius:999px;font-size:11px;margin-bottom:6px}
+  .price{margin-top:6px;font-weight:800}
+  .lock{position:absolute;right:10px;top:10px;font-size:11px;opacity:.75;border:1px solid var(--stroke);border-radius:999px;padding:.2rem .45rem}
+  .goldHdr{color:var(--gold)}
 </style>
 </head>
 <body>
-  <div class="topbar">
+  <div class="top">
     <div class="brand">HeroHUD</div>
-    <div class="menu">
-      <button class="pill" id="btnFull">Full Screen</button>
-      <button class="pill" id="btnGarage">Garage</button>
+    <div>
+      <button class="pill" id="btnGarage">Open Garage</button>
+      <button class="pill gray" id="btnFS">Full Screen</button>
+      <button class="pill" id="btnVoice">Voice: Off</button>
     </div>
   </div>
 
-  <div class="wrap">
-    <div class="stack">
-      <h1>Upload → Analyze → Send</h1>
-      <p class="sub">Brief readout. Smart modules. Premium gates are hint-only.</p>
+  <main class="wrap">
+    <!-- LEFT: PREVIEW -->
+    <section class="panel">
+      <div class="title">Upload → Analyze</div>
+      <div class="controls">
+        <button class="btn gray" id="btnUpload">⬆ Upload</button>
+        <button class="btn gray" id="btnCamera">📷 Camera</button>
+        <button class="btn" id="btnAnalyze">🔍 Analyze</button>
+      </div>
+
+      <div class="stage" id="stage">
+        <img id="previewImg" alt="" hidden />
+        <video id="previewVid" playsinline muted hidden></video>
+        <div class="edgeGlow" id="edgeGlow"></div>
+        <div class="spin" id="spin"><div class="mini"></div><span id="spinTxt">Analyzing…</span></div>
+      </div>
+
+      <div class="tips" id="tips"></div>
+      <input type="file" id="file" accept="image/*" hidden />
+    </section>
+
+    <!-- RIGHT: ESTIMATE SHEET -->
+    <section class="panel">
+      <div class="title">Estimate • Baseline</div>
 
       <div class="row">
-        <button class="btn" id="btnUpload">⬆ Upload</button>
-        <button class="btn" id="btnCamera">📷 Camera</button>
-        <button class="btn" id="btnAnalyze">🔍 Analyze</button>
-        <button class="btn gray" id="btnSpeak">🔈 Read</button>
+        <select id="svc" class="select">
+          <option value="mulch">Mulch</option>
+          <option value="mowing">Mowing</option>
+          <option value="trimming">Shrub Trimming</option>
+          <option value="weeding">Weeding</option>
+        </select>
+        <select id="grade" class="select">
+          <option value="basic">Basic</option>
+          <option value="standard" selected>Standard</option>
+          <option value="premium">Premium</option>
+        </select>
       </div>
 
-      <!-- Preview -->
-      <div id="preview">
-        <img id="previewImg" alt="preview"/>
-        <div id="edgeGlow"></div>
-        <div class="wheel" id="wheel" style="display:none;"><div class="mini-spin"></div><span id="wheelText">Analyzing…</span></div>
+      <div class="row" style="margin-top:8px">
+        <input id="size" class="field" placeholder="Size (sqft or shrubs)" inputmode="decimal" />
+        <input id="materials" class="field" placeholder="Materials (auto-filled when possible)" />
       </div>
 
-      <!-- Modules -->
-      <section class="modules" id="modules" style="display:none">
-        <!-- Base Estimate -->
-        <div class="card" id="modBase">
-          <h3>💰 Estimated Cost</h3>
-          <div class="kpi">
-            <div><span class="hint">Base</span><div class="price" id="basePrice">—</div></div>
-            <div><span class="hint">Time</span><div id="baseTime">—</div></div>
-          </div>
-          <div class="hint" id="baseNote"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="time" class="field" placeholder="Time (hrs, auto-estimated)" />
+        <input id="crew" class="field" placeholder="Crew (1–4, optional)" />
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="meter">
+          <div style="min-width:112px;color:var(--textDim);font-size:12px">Upsell Potential</div>
+          <div class="bar"><div id="upsellFill" class="fill"></div></div>
         </div>
-
-        <!-- Risk -->
-        <div class="card" id="modRisk">
-          <h3>⚠️ Risk Factor</h3>
-          <div class="kpi">
-            <div id="riskLabel" class="tag">—</div>
-            <div class="hint" id="riskNotes">—</div>
-          </div>
+        <div class="meter" style="margin-top:8px">
+          <div style="min-width:112px;color:var(--textDim);font-size:12px">Risk Factor</div>
+          <div class="bar"><div id="riskFill" class="fill risk" style="width:20%"></div></div>
         </div>
+        <div class="note" id="noteGated">Full playbooks + scripts in Garage tiers.</div>
+      </div>
 
-        <!-- Upsell (locked hint) -->
-        <div class="card locked" id="modUpsell">
-          <h3>🚀 Upsell Potential <span class="tag">Pro 🔒</span></h3>
-          <div class="kpi">
-            <div><span class="hint">Possible</span><div class="price" id="upsellPrice">—</div></div>
-          </div>
-          <div class="hint">Unlock Pro for bundling paths, scripts & packaging.</div>
-          <div style="margin-top:8px"><a class="pill" href="https://www.paypal.com/ncp/payment/7N7JBS2V2B25Q" target="_blank" rel="noopener">Unlock Pro Exports</a></div>
-        </div>
+      <div class="total" id="total">Total: —</div>
 
-        <!-- Field Advantage (locked) -->
-        <div class="card locked" id="modField">
-          <h3>📈 Field Advantage <span class="tag">Platinum 🔒</span></h3>
-          <div class="hint">Save time / raise margin with technique & materials picks.</div>
-          <div style="margin-top:8px"><a class="pill" href="https://www.paypal.com/ncp/payment/AKUYMX3FCMUN4" target="_blank" rel="noopener">Unlock Field Guides</a></div>
-        </div>
-      </section>
+      <div class="controls" style="margin-top:8px">
+        <button class="btn" id="btnCalc">Calculate</button>
+        <button class="btn gray" id="btnExport">Export .txt</button>
+        <button class="pill gold" id="btnZeroFriction">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2l2.39 4.84 5.34.78-3.86 3.76.91 5.32L12 14.77 6.22 16.7l.91-5.32L3.27 7.62l5.34-.78L12 2z"/></svg>
+          </span>
+          Zero-Friction Pack
+        </button>
+      </div>
+      <div class="note">Baseline is free. Unlimited exports + pro playbooks unlock in Garage.</div>
+    </section>
+  </main>
 
-      <input type="file" id="file" accept="image/*" hidden />
-    </div>
-  </div>
-
-  <!-- Voice orb -->
-  <div id="voiceOrb" class="idle" title="Tap to talk / Tap to stop">🎙️</div>
-  <div id="listenText">Listening…</div>
-
-  <!-- Footer golden pills -->
-  <div class="footer">
-    <button class="pill gold" id="pillExport">
-      <span class="icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a1 1 0 0 1 1 1v7h3l-4 4-4-4h3V4a1 1 0 0 1 1-1zM5 20a2 2 0 0 1-2-2v-3a1 1 0 1 1 2 0v3h14v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5z"/></svg>
-      </span>
-      Export (.txt)
-    </button>
-    <button class="pill gold" id="pillBP">
-      <span class="icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4h14a1 1 0 0 1 1 1v12.5l-3.5-2.1a2 2 0 0 0-2.1 0L12 17.5l-2.4-1.6a2 2 0 0 0-2.1 0L4 17.5V5a1 1 0 0 1 1-1z"/></svg>
-      </span>
+  <!-- FOOTER ACTIONS (gold icons) -->
+  <div class="foot">
+    <button class="pill gold" id="footBP">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 4h14a1 1 0 0 1 1 1v12.5l-3.5-2.1a2 2 0 0 0-2.1 0L12 17.5l-2.4-1.6a2 2 0 0 0-2.1 0L4 17.5V5a1 1 0 0 1 1-1z"/></svg></span>
       Best Practices
     </button>
-    <button class="pill gold" id="pillFG">
-      <span class="icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5zm11 0v4h4"/></svg>
-      </span>
+    <button class="pill gold" id="footFG">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5zm11 0v4h4"/></svg></span>
       Field Guides
     </button>
+    <button class="pill gold" id="footExport">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3a1 1 0 0 1 1 1v7h3l-4 4-4-4h3V4a1 1 0 0 1 1-1zM5 20a2 2 0 0 1-2-2v-3a1 1 0 1 1 2 0v3h14v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5z"/></svg></span>
+      Export Log
+    </button>
+  </div>
+
+  <!-- GARAGE -->
+  <div class="garage" id="garage">
+    <div class="door">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="gTitle">CARDINAL GARAGE • Tiers & Unlocks</div>
+        <button class="pill gray" id="gClose">Close</button>
+      </div>
+      <div class="cards">
+        <!-- Access+ -->
+        <div class="card">
+          <span class="tag">Access+</span><span class="lock" id="lkAccess">Locked</span>
+          <h4>Unlimited Uploads + Calculator</h4>
+          <p>Unlock unlimited camera, analysis, and calc exports.</p>
+          <div class="price mono">$10 / month</div>
+          <a class="pill" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/LD5BM638SRCFA" id="buyAccess">Unlock</a>
+        </div>
+        <!-- Field Guides -->
+        <div class="card">
+          <span class="tag">Field Guides</span><span class="lock" id="lkFG">Locked</span>
+          <h4>Tools • Materials • Checklists</h4>
+          <p>Ratios, depths, mixes, starter kits, standards.</p>
+          <div class="price mono">$39 / month</div>
+          <a class="pill" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/AKUYMX3FCMUN4" id="buyFG">Unlock</a>
+        </div>
+        <!-- Best Practices -->
+        <div class="card">
+          <span class="tag">Best Practices</span><span class="lock" id="lkBP">Locked</span>
+          <h4>Situational Playbooks</h4>
+          <p>Risk flags, time-boxing, QC, repeat-work patterns.</p>
+          <div class="price mono">$59–89 / month</div>
+          <a class="pill" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/BHQ9A57DLN24S" id="buyBP">Unlock</a>
+        </div>
+        <!-- Sales University -->
+        <div class="card">
+          <span class="tag">Sales University</span><span class="lock" id="lkSU">Locked</span>
+          <h4>AI Role-Play & Closer Drills</h4>
+          <p>2-week program: door-knock sims, objections, closes.</p>
+          <div class="price mono">$349 • one-month program</div>
+          <a class="pill" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/M3CBPH327ELAJ" id="buySU">Unlock</a>
+        </div>
+        <!-- Platinum -->
+        <div class="card">
+          <span class="tag">Platinum</span><span class="lock" id="lkPR">Locked</span>
+          <h4>Unlimited Pro Exports</h4>
+          <p>Client PDFs, upsell hints, confidence marker, scripts.</p>
+          <div class="price mono">$89.99 / month</div>
+          <a class="pill" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/7N7JBS2V2B25Q" id="buyPR">Unlock</a>
+        </div>
+      </div>
+
+      <hr style="border-color:var(--stroke);margin:12px 0">
+
+      <!-- Gold add-on -->
+      <div class="card" style="grid-column:1 / -1">
+        <h3 class="goldHdr">Zero-Friction Pack (Gold Add-On)</h3>
+        <p style="color:var(--textDim)">Objection-proof, job-site tested scripts that remove stalls and price pushback — tuned for outdoor services and teens/new crews. Includes fast pivots, “what now” transitions, and confidence lines.</p>
+        <div class="price mono" style="color:var(--gold)">$29 • one-time</div>
+        <button class="pill gold" id="tryZF">Preview Script</button>
+      </div>
+    </div>
   </div>
 
 <script>
 (() => {
   /* ===== CONFIG ===== */
-  const CONFIG = {
-    API_BASE: "https://cardinalgaragepro.com",
-    VOICES: { proMale: "alloy", female: "luna" },
-    PAYPAL: {
-      pro: "https://www.paypal.com/ncp/payment/7N7JBS2V2B25Q",
-      fg:  "https://www.paypal.com/ncp/payment/AKUYMX3FCMUN4",
-      bp:  "https://www.paypal.com/ncp/payment/BHQ9A57DLN24S"
-    }
+  const API = "https://cardinalgaragepro.com"; // your backend
+  const state = {
+    imgBlob:null, logs:[], email:localStorage.getItem('herohud_email')||"",
+    access: localStorage.getItem('herohud_access')==='1',
+    voice:false
   };
 
   /* ===== ELEMENTS ===== */
+  const q = s => document.querySelector(s);
   const el = {
-    btnUpload: q('#btnUpload'),
-    btnCamera: q('#btnCamera'),
-    btnAnalyze: q('#btnAnalyze'),
-    btnSpeak: q('#btnSpeak'),
-    file: q('#file'),
-    preview: q('#preview'),
-    previewImg: q('#previewImg'),
-    edgeGlow: q('#edgeGlow'),
-    wheel: q('#wheel'),
-    wheelText: q('#wheelText'),
-    modules: q('#modules'),
-    basePrice: q('#basePrice'),
-    baseTime: q('#baseTime'),
-    baseNote: q('#baseNote'),
-    riskLabel: q('#riskLabel'),
-    riskNotes: q('#riskNotes'),
-    upsellPrice: q('#upsellPrice'),
-    pillExport: q('#pillExport'),
-    pillBP: q('#pillBP'),
-    pillFG: q('#pillFG'),
-    voiceOrb: q('#voiceOrb'),
-    listenText: q('#listenText'),
-    btnFull: q('#btnFull'),
-    btnGarage: q('#btnGarage'),
-  };
-
-  /* ===== STATE ===== */
-  const STATE = {
-    last: {
-      basePrice: null,
-      baseTime: null,
-      risk: null,
-      riskNotes: null,
-      upsell: null,
-      summary: ""
-    },
-    listening: false,
-    recognition: null
+    file:q('#file'), img:q('#previewImg'), vid:q('#previewVid'),
+    stage:q('#stage'), glow:q('#edgeGlow'), spin:q('#spin'), spinTxt:q('#spinTxt'),
+    tips:q('#tips'),
+    svc:q('#svc'), grade:q('#grade'), size:q('#size'), materials:q('#materials'),
+    time:q('#time'), crew:q('#crew'), total:q('#total'),
+    upsellFill:q('#upsellFill'), riskFill:q('#riskFill'),
+    btnUpload:q('#btnUpload'), btnCamera:q('#btnCamera'), btnAnalyze:q('#btnAnalyze'),
+    btnCalc:q('#btnCalc'), btnExport:q('#btnExport'), btnZeroF:q('#btnZeroFriction'),
+    footExport:q('#footExport'), footBP:q('#footBP'), footFG:q('#footFG'),
+    btnFS:q('#btnFS'), btnGarage:q('#btnGarage'), g:q('#garage'), gClose:q('#gClose'),
+    buyAccess:q('#buyAccess'), buyFG:q('#buyFG'), buyBP:q('#buyBP'),
+    buySU:q('#buySU'), buyPR:q('#buyPR'),
+    lkAccess:q('#lkAccess'), lkFG:q('#lkFG'), lkBP:q('#lkBP'), lkSU:q('#lkSU'), lkPR:q('#lkPR'),
+    btnVoice:q('#btnVoice'), tryZF:q('#tryZF')
   };
 
   /* ===== HELPERS ===== */
-  function q(s){ return document.querySelector(s); }
-  function show(node, on=true){ node.style.display = on ? '' : 'none'; }
-  function glowEdge(){ el.edgeGlow.style.opacity=1; setTimeout(()=>el.edgeGlow.style.opacity=0, 750); }
-  function downloadTxt(filename, text){
-    const blob=new Blob([text],{type:"text/plain"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
-  }
-  function dateStamp(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; }
+  const stamp = ()=> new Date().toISOString();
+  const log = (k,p)=> state.logs.push({t:stamp(),k,p});
+  const blobToURL = b => URL.createObjectURL(b);
+  const saveTxt = (name, text) => {
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));
+    a.download=name; a.click();
+  };
+  const money = v=> `$${Math.round(v).toLocaleString()}`;
 
-  /* ===== UPLOAD / CAMERA ===== */
+  function calcPrice(svc, size, grade){
+    const mul = grade==='premium'?1.35:grade==='standard'?1.0:0.8;
+    const unit = {mulch:.35, mowing:.02, trimming:7.5, weeding:.18}[svc] ?? .25;
+    const raw = (Number(size)||0) * unit * mul;
+    const overhead = Math.max(15, raw*0.12);
+    return Math.max(30, raw+overhead);
+  }
+
+  function setMeters(summary){
+    // light heuristics; fuller logic can come from /inference later
+    const s = (summary||"").toLowerCase();
+    let upsell = 35, risk = 20;
+    if(/edge|edging|border/.test(s)) upsell += 20;
+    if(/weeds|overgrown|erosion|slope|water/.test(s)) { risk += 25; upsell += 10; }
+    if(/fresh mulch|define/.test(s)) upsell += 10;
+    el.upsellFill.style.width = Math.min(95, upsell) + '%';
+    el.riskFill.style.width   = Math.min(95, risk) + '%';
+  }
+
+  function tipLine(text){
+    const t=document.createElement('div');
+    t.className='tip';
+    t.textContent=text;
+    el.tips.appendChild(t);
+    requestAnimationFrame(()=>t.classList.add('show'));
+  }
+
+  function reflectLocks(){
+    el.lkAccess.textContent = state.access ? 'Unlocked' : 'Locked';
+    el.lkAccess.style.opacity = state.access ? .35 : .75;
+  }
+
+  /* ===== IMAGE LOAD / CAMERA ===== */
   el.btnUpload.onclick = ()=> el.file.click();
-  el.file.onchange = ()=>{
+  el.file.onchange = async ()=> {
     const f = el.file.files[0]; if(!f) return;
-    const url = URL.createObjectURL(f);
-    el.previewImg.src = url;
-    show(el.preview, true);
-    glowEdge();
+    state.imgBlob = f;
+    el.img.src = blobToURL(f); el.img.hidden=false; el.vid.hidden=true;
+    el.glow.style.opacity=1; setTimeout(()=>el.glow.style.opacity=0,700);
+    el.tips.innerHTML=''; tipLine('Photo loaded — tap Analyze.');
+    log('upload',{name:f.name,size:f.size});
   };
 
-  el.btnCamera.onclick = openCamera;
-  let camStream=null, camVideo=null, captureBtn=null;
-  async function openCamera(){
+  let camStream=null;
+  el.btnCamera.onclick = async ()=>{
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:"user"}}}).catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
-      camStream=stream;
-      camVideo=document.createElement("video");
-      camVideo.playsInline=true; camVideo.muted=true; camVideo.srcObject=stream; await camVideo.play();
-      // swap into preview
-      const node = el.preview.querySelector("img,video");
-      if(node){ node.replaceWith(camVideo); } else { el.preview.prepend(camVideo); }
-      show(el.preview, true);
-      ensureCaptureBtn();
-      glowEdge();
-    }catch(e){ alert("Camera access denied."); }
-  }
-  function ensureCaptureBtn(){
-    if(captureBtn) captureBtn.remove();
-    captureBtn=document.createElement("button");
-    captureBtn.textContent="Capture";
-    captureBtn.className="btn";
-    captureBtn.style.position="absolute"; captureBtn.style.right="10px"; captureBtn.style.bottom="10px";
-    el.preview.appendChild(captureBtn);
-    captureBtn.onclick=async()=>{
-      if(!camVideo) return;
-      const canvas=document.createElement("canvas");
-      canvas.width=camVideo.videoWidth||1280; canvas.height=camVideo.videoHeight||720;
-      canvas.getContext("2d").drawImage(camVideo,0,0,canvas.width,canvas.height);
-      const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
-      if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-      camVideo=null;
-      const url=URL.createObjectURL(blob);
-      // replace with img
-      const img=document.createElement("img"); img.src=url; img.id="previewImg"; img.alt="preview";
-      const node=el.preview.querySelector("img,video"); if(node) node.replaceWith(img); else el.preview.prepend(img);
-      glowEdge();
-    };
-  }
+      const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'user'}}})
+        .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
+      camStream=s; el.vid.srcObject=s; await el.vid.play();
+      el.vid.hidden=false; el.img.hidden=true; el.glow.style.opacity=1; setTimeout(()=>el.glow.style.opacity=0,700);
+      el.tips.innerHTML=''; tipLine('Camera online — tap Analyze to capture and process.');
+    }catch(e){ tipLine('Camera blocked. Use Upload.'); }
+  };
 
   /* ===== ANALYZE ===== */
-  el.btnAnalyze.onclick = analyze;
-  async function analyze(){
-    const node = el.preview.querySelector("img,video");
-    if(!node){ alert("Upload or capture a photo first."); return; }
-    el.wheel.style.display='flex';
+  el.btnAnalyze.onclick = async ()=>{
     try{
-      let blob;
-      if(node.tagName==='VIDEO'){
-        const canvas=document.createElement("canvas");
-        canvas.width=node.videoWidth||1280; canvas.height=node.videoHeight||720;
-        canvas.getContext("2d").drawImage(node,0,0,canvas.width,canvas.height);
-        blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
-      }else{
-        const r=await fetch(node.src); blob=await r.blob();
+      el.tips.innerHTML=''; el.spin.style.display='flex'; el.spinTxt.textContent='Analyzing…';
+
+      // get blob from current node
+      let blob = state.imgBlob;
+      if(!blob && !el.vid.hidden){
+        // capture a frame
+        const c = document.createElement('canvas');
+        c.width = el.vid.videoWidth||1280; c.height = el.vid.videoHeight||720;
+        c.getContext('2d').drawImage(el.vid,0,0,c.width,c.height);
+        blob = await new Promise(r=>c.toBlob(r,'image/jpeg',0.92));
       }
-      const fd=new FormData(); fd.append("file", blob, "capture.jpg");
-      const r = await fetch(`${CONFIG.API_BASE}/analyze-image`, { method:"POST", body:fd });
-      const j = await r.json();
+      if(!blob){ tipLine('Load a photo first.'); el.spin.style.display='none'; return; }
 
-      // Expected flexible contract (either structured or summary text)
-      // Try structured:
-      let base = j.base_estimate || null;
-      let time = j.job_time || null;
-      let risk = (j.risk || "").toLowerCase();
-      let riskNotes = j.risk_notes || j.riskReasons || j.factors || "";
-      let upsell = j.upsell || j.upsell_potential || null;
-      let summary = j.summary || "";
+      // POST → /analyze-image
+      const fd = new FormData(); fd.append('file', blob, 'capture.jpg');
+      const resp = await fetch(`${API}/analyze-image`, { method:'POST', body:fd });
+      const data = await resp.json();
 
-      // Fallbacks if only summary string provided
-      if(!base && typeof j === 'object' && j.summary){
-        // naive pulls (keeps it robust even if backend returns only text)
-        const m1 = j.summary.match(/\$([0-9]{2,5})/); if(m1) base = Number(m1[1]);
-        const m2 = j.summary.match(/(\d+(?:\.\d+)?)\s*(?:hr|hour)/i); if(m2) time = `${m2[1]} hours`;
-        summary = j.summary;
+      const summary = data.summary || 'Analysis complete.';
+      tipLine(summary);
+      (summary.match(/[^.;]+/g)||[]).slice(0,3).forEach((s,i)=>{ if(i) tipLine(s.trim()); });
+
+      // Try to infer basic time/materials if empty
+      if(!el.materials.value){
+        if(/mulch/i.test(summary)) el.materials.value = 'Mulch + Edger + Bags';
+        if(/weed|weeds/i.test(summary)) el.materials.value = 'Weed tools + Bags + Pre-emergent';
       }
-      if(!risk){ risk = "medium"; }
-      if(!time){ time = "3.0 hours"; }
-      if(!base){ base = 450; }
-      if(!upsell){ upsell = Math.round(base * 1.45); }
-      if(!riskNotes){ riskNotes = "Edge definition, cleanup, material variance."; }
+      if(!el.time.value){
+        el.time.value = /overgrown|heavy/i.test(summary) ? "3.0" : "1.5";
+      }
 
-      // Paint UI
-      el.basePrice.textContent = `$${Number(base).toFixed(0)}`;
-      el.baseTime.textContent = time;
-      el.baseNote.textContent = summary ? clip(summary, 140) : "Standard scope based on visible conditions.";
+      // meters + total
+      setMeters(summary);
+      runCalc(); // compute based on current svc/size/grade
 
-      const riskClass = risk.startsWith('h') ? 'risk-high' : risk.startsWith('l') ? 'risk-low' : 'risk-med';
-      el.riskLabel.textContent = risk.toUpperCase();
-      el.riskLabel.classList.remove('risk-high','risk-med','risk-low');
-      el.riskLabel.classList.add(riskClass);
-      el.riskNotes.textContent = riskNotes;
+      // Optional: brief voice (off by default)
+      if(state.voice){
+        await speak(summary);
+      }
 
-      el.upsellPrice.textContent = `$${Number(upsell).toFixed(0)}`;
-
-      show(el.modules, true);
-      speakShort(`Base around ${Number(base).toFixed(0)} dollars, about ${time.replace('hours','hours')}. Some upsell potential detected.`);
-
-      // Save for export
-      STATE.last = {
-        basePrice: `$${Number(base).toFixed(0)}`,
-        baseTime: time,
-        risk: risk.toUpperCase(),
-        riskNotes,
-        upsell: `$${Number(upsell).toFixed(0)}`,
-        summary: summary || ""
-      };
+      log('analyze',{summary});
+      el.spin.style.display='none';
     }catch(e){
+      el.spin.style.display='none';
+      tipLine('Analyze failed. Try again.');
       console.error(e);
-      alert("Analyze failed. Try again.");
-    }finally{
-      el.wheel.style.display='none';
     }
-  }
-
-  function clip(s, n){ s=(s||"").trim(); return s.length>n ? s.slice(0,n-1)+"…" : s; }
-
-  /* ===== SPEAK (backend TTS) ===== */
-  el.btnSpeak.onclick = ()=> {
-    const text = STATE.last.summary
-      ? `Summary. ${STATE.last.summary}`
-      : `Estimate ready. Base ${STATE.last.basePrice||''}, time ${STATE.last.baseTime||''}.`;
-    speakShort(text);
   };
 
-  async function speakShort(text, voice=CONFIG.VOICES.proMale){
-    try{
-      el.voiceOrb.classList.remove('idle','listening'); el.voiceOrb.classList.add('speaking');
-      const r = await fetch(`${CONFIG.API_BASE}/speak`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ text, voice })
-      });
-      const buf = await r.arrayBuffer();
-      const blob = new Blob([buf], { type:"audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-      const a = new Audio(url);
-      a.onended = ()=> el.voiceOrb.className='idle';
-      a.play();
-    }catch(_){
-      el.voiceOrb.className='idle';
-    }
+  /* ===== CALCULATE / EXPORT ===== */
+  function runCalc(){
+    const svc = el.svc.value;
+    const size = Number((el.size.value||'').replace(/[^0-9.]/g,''))||0;
+    const grade = el.grade.value;
+    const total = calcPrice(svc,size,grade);
+    el.total.textContent = `Total: ${money(total)}`;
   }
+  el.btnCalc.onclick = runCalc;
+  ['svc','grade','size'].forEach(id=> el[id].addEventListener('change', runCalc));
 
-  /* ===== TAP-TO-TALK (browser SR, quick commands) ===== */
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(SR){
-    STATE.recognition = new SR();
-    STATE.recognition.continuous=false; STATE.recognition.interimResults=false; STATE.recognition.lang='en-US';
-    STATE.recognition.onresult = (e)=>{
-      const t=(e.results[0]&&e.results[0][0]&&e.results[0][0].transcript||"").toLowerCase();
-      if(/analy[sz]e|run|go/.test(t)) return el.btnAnalyze.click();
-      if(/read|speak|talk/.test(t)) return el.btnSpeak.click();
-      if(/upload/.test(t)) return el.btnUpload.click();
-    };
-    STATE.recognition.onend = ()=>{ STATE.listening=false; el.voiceOrb.className='idle'; el.listenText.classList.remove('show'); };
-    STATE.recognition.onerror = ()=>{ STATE.listening=false; el.voiceOrb.className='idle'; el.listenText.classList.remove('show'); };
-  } else {
-    el.voiceOrb.title = "Voice commands not supported in this browser.";
-  }
+  el.btnExport.onclick = ()=>{
+    // free export of baseline; pro PDFs are in Platinum
+    const tipsTxt=[...document.querySelectorAll('.tip')].map(e=>e.textContent.trim()).join('\n');
+    const text = [
+      'HeroHUD Baseline Export',
+      '=======================',
+      `Service: ${el.svc.value}`,
+      `Grade: ${el.grade.value}`,
+      `Size: ${el.size.value||'-'}`,
+      `Materials: ${el.materials.value||'-'}`,
+      `Time (hrs): ${el.time.value||'-'}`,
+      `Crew: ${el.crew.value||'-'}`,
+      '',
+      `Upsell Potential: ${el.upsellFill.style.width||'—'}`,
+      `Risk Factor: ${el.riskFill.style.width||'—'}`,
+      '',
+      `Total: ${el.total.textContent.replace('Total: ','')}`,
+      '',
+      'Tips:',
+      tipsTxt||'-',
+      ''
+    ].join('\n');
+    saveTxt(`herohud_baseline_${Date.now()}.txt`, text);
+  };
+  el.footExport.onclick = ()=> el.btnExport.click();
 
-  el.voiceOrb.addEventListener('click', ()=>{
-    if(!SR || !STATE.recognition){ return; }
-    if(STATE.listening){ STATE.recognition.stop(); return; }
-    try{
-      STATE.listening=true;
-      el.voiceOrb.classList.remove('idle','speaking'); el.voiceOrb.classList.add('listening');
-      el.listenText.classList.add('show');
-      STATE.recognition.start();
-    }catch(_){}
+  /* ===== GARAGE ===== */
+  el.btnGarage.onclick = ()=> { el.g.style.display='block'; reflectLocks(); };
+  el.gClose.onclick = ()=> el.g.style.display='none';
+
+  [el.buyAccess, el.buyFG, el.buyBP, el.buySU, el.buyPR].forEach(a=>{
+    a?.addEventListener('click', ()=>{
+      // optimistic unlock after payment page
+      setTimeout(()=> {
+        if(a===el.buyAccess){ localStorage.setItem('herohud_access','1'); state.access=true; reflectLocks(); }
+      }, 5000);
+    });
   });
 
-  /* ===== EXPORT ===== */
-  el.pillExport.onclick = ()=>{
-    const text = [
-      "HeroHUD Analysis",
-      "================",
-      "",
-      `Base Price: ${STATE.last.basePrice||"-"}`,
-      `Time: ${STATE.last.baseTime||"-"}`,
-      `Risk: ${STATE.last.risk||"-"}`,
-      `Risk Notes: ${STATE.last.riskNotes||"-"}`,
-      `Upsell Potential: ${STATE.last.upsell||"-"}`,
-      "",
-      "Summary:",
-      STATE.last.summary||"-",
-      ""
-    ].join("\n");
-    downloadTxt(`herohud_${dateStamp()}.txt`, text);
+  el.footBP.onclick = ()=> { el.g.style.display='block'; };
+  el.footFG.onclick = ()=> { el.g.style.display='block'; };
+
+  /* ===== ZERO-FRICTION PREVIEW ===== */
+  el.btnZeroF.onclick = ()=> {
+    alert([
+      'Zero-Friction Open:',
+      '“All set — we’ll keep your edges clean and leave the bed camera-ready for photos. Do you want it standard finish or premium with the crisp edge? Premium looks sharp and adds only a little time.”',
+      '',
+      'Price Pushback Pivot:',
+      '“No problem — we can keep the base price and still get the result. The only difference is finish level. Standard now, and if you like the look we’ll schedule a premium refresh later.”',
+      '',
+      'Close:',
+      '“We’ve got a spot this afternoon or first thing tomorrow. What works for you?”'
+    ].join('\n'));
   };
 
-  el.pillBP.onclick = ()=> window.open(CONFIG.PAYPAL.bp, "_blank", "noopener");
-  el.pillFG.onclick = ()=> window.open(CONFIG.PAYPAL.fg, "_blank", "noopener");
-
-  /* ===== FULLSCREEN / GARAGE placeholder ===== */
-  el.btnFull.onclick = () => {
+  /* ===== FULLSCREEN / VOICE ===== */
+  el.btnFS.onclick = ()=>{
     if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
     else document.exitFullscreen().catch(()=>{});
   };
-  el.btnGarage.onclick = ()=> alert("Garage opens from your main deck. (Hook later.)");
+  el.btnVoice.onclick = ()=>{
+    state.voice = !state.voice;
+    el.btnVoice.textContent = state.voice ? 'Voice: On' : 'Voice: Off';
+  };
+
+  async function speak(text){
+    try{
+      const r = await fetch(`${API}/speak`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ text, voice:'alloy' })
+      });
+      const buf = await r.arrayBuffer();
+      const b = new Blob([buf],{type:'audio/mpeg'});
+      const url = URL.createObjectURL(b);
+      const audio = new Audio(url);
+      audio.play();
+    }catch(e){ console.warn('TTS failed', e); }
+  }
 
   /* ===== INIT ===== */
-  // nothing auto-starts
-
+  reflectLocks();
 })();
 </script>
 </body>
