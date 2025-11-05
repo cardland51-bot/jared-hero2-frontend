@@ -44,6 +44,12 @@
   .pill:hover{box-shadow:0 0 22px rgba(156,255,224,.35)}
   .pill.locked{opacity:.55;cursor:not-allowed}
 
+  /* Locale + Addie toggle */
+  .locale{display:flex;gap:10px;align-items:center;margin-left:8px;font-size:12px;color:var(--textDim)}
+  .locale .sep{opacity:.6}
+  #addieToggle{cursor:pointer;border:1px solid var(--stroke);border-radius:999px;padding:.18rem .55rem;background:rgba(255,255,255,.04)}
+  #addieToggle.on{border-color:var(--mint);color:var(--mintL);box-shadow:0 0 12px rgba(156,255,224,.28)}
+
   /* Landing gate (Homeowner vs Pro) */
   #landingGate{position:fixed;inset:56px 0 0 0;display:grid;place-items:center;padding:18px;z-index:42}
   .gateWrap{display:grid;gap:18px;max-width:980px;width:100%;text-align:center}
@@ -179,7 +185,7 @@
   /* Voice orb (draggable) */
   #voiceOrb{position:fixed;left:18px;bottom:80px;width:54px;height:54px;border-radius:999px;border:1px solid var(--mint);background:radial-gradient(circle at 60% 40%, rgba(156,255,224,.25), rgba(47,176,233,.12));box-shadow:0 0 16px rgba(156,255,224,.25);z-index:60;display:grid;place-items:center}
   #voiceOrb.idle{box-shadow:0 0 10px rgba(156,255,224,.2)}
-  #voiceOrb.thinking{animation:pulse 1.4s ease-in-out infinite}
+  #voiceOrb.listening{animation:pulse 1.4s ease-in-out infinite}
   #voiceOrb.speaking{box-shadow:0 0 20px rgba(156,255,224,.45), 0 0 28px rgba(47,176,233,.35)}
   @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
@@ -202,6 +208,16 @@
   .modalRow{display:flex;gap:8px;align-items:center}
   .modalInput{flex:1;border:1px solid var(--stroke);background:rgba(255,255,255,.04);border-radius:10px;padding:.55rem .6rem;color:var(--text)}
 
+  /* Founder slide-up sheet */
+  #founderTab{position:fixed;left:50%;transform:translateX(-50%);bottom:8px;z-index:61}
+  #founderHandle{cursor:pointer;border:1px solid var(--stroke);border-radius:999px;padding:.35rem .8rem;background:rgba(255,255,255,.04);font-size:12px;color:var(--textDim);box-shadow:0 0 14px rgba(156,255,224,.18)}
+  #founderSheet{position:fixed;left:0;right:0;bottom:-70vh;height:60vh;background:var(--ink);border-top:1px solid var(--stroke);box-shadow:0 -10px 40px rgba(0,0,0,.55);z-index:120;border-top-left-radius:16px;border-top-right-radius:16px;transition:bottom .4s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column}
+  #founderSheet.open{bottom:0}
+  .fHead{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--stroke)}
+  .fBody{padding:14px;overflow:auto}
+  .fTitle{font-weight:800;letter-spacing:.12em;color:var(--mintL)}
+  .fClose{border:1px solid var(--stroke);background:#0e1815;color:var(--text);border-radius:999px;padding:.35rem .6rem;cursor:pointer}
+
   /* Footer */
   .footer{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:12px;color:rgba(233,255,246,.7);letter-spacing:.12em;text-transform:uppercase}
 
@@ -220,6 +236,10 @@
       <button class="pill" id="btnCalc">Calculator</button>
       <button class="pill" id="btnFull">Full Screen</button>
       <button class="pill" id="btnGarage">Open Garage</button>
+      <div class="locale">
+        <span>EN</span><span class="sep">|</span><span>ES</span><span class="sep">|</span><span>FR</span><span class="sep">|</span><span>PT</span>
+        <span id="addieToggle" title="Toggle Addie">ADDIE 🔴</span>
+      </div>
     </div>
   </div>
 
@@ -237,7 +257,7 @@
         </div>
         <div class="gateCard" id="proCard">
           <div class="h">Pro</div>
-          <p>Go straight into HeroHUD: Upload → Analyze → Send. Jared/Natty onboard you.</p>
+          <p>Go straight into HeroHUD: Upload → Analyze → Send. Jared onboard you.</p>
           <div class="btn-row">
             <button class="btn" id="btnPro">Enter Pro</button>
           </div>
@@ -260,7 +280,7 @@
       <h1 class="headline">Upload → Analyze → Send</h1>
       <p class="subline" id="subline">Turn photos into confident decisions. Avg ticket lift ~ <b>30%</b> over time.</p>
 
-      <!-- Focus panel -->
+      <!-- Focus panel (hides permanently after first choice this session) -->
       <div id="focusPanel">
         <span class="chip active" data-focus="mixed">Mixed</span>
         <span class="chip" data-focus="mowing">Mowing</span>
@@ -306,8 +326,30 @@
     </div>
   </section>
 
-  <!-- Voice orb -->
-  <div id="voiceOrb" class="idle" title="Voice status orb"></div>
+  <!-- Voice orb (tap to talk/stop, draggable) -->
+  <div id="voiceOrb" class="idle" title="Tap to talk / Tap to stop"></div>
+
+  <!-- Founder slide-up -->
+  <div id="founderTab"><div id="founderHandle">Founder</div></div>
+  <div id="founderSheet" aria-hidden="true">
+    <div class="fHead">
+      <div class="fTitle">WorkRockPro • Field-Built Mission</div>
+      <button class="fClose" id="founderClose">Close</button>
+    </div>
+    <div class="fBody">
+      <h3 class="h">Built From the Dirt Up</h3>
+      <p class="sub">
+        Twenty years in landscaping. Real jobs, real bids, real pressure. WorkRockPro was built to kill guesswork and
+        turn a single photo into clean numbers, upsell paths, and confidence in the field. No fluff — just results.
+      </p>
+      <h4 class="h">Mission</h4>
+      <p>Give every worker — from the kid mowing to the crew with five trucks — the power of precise, fast estimates and clear execution.</p>
+      <h4 class="h">Vision</h4>
+      <p>Field first. Pricing and insights driven by reality, not office theory. Experience stays in control — AI backs it up.</p>
+      <h4 class="h">Founder</h4>
+      <p><b>Jared — 20 Years in the Field.</b> Founder of Cardinal Landscaping. This is the tool I wish I had on day one.</p>
+    </div>
+  </div>
 
   <!-- Toast -->
   <div id="toast">
@@ -377,7 +419,7 @@
             <div class="price mono">$10 / month</div>
           </div>
           <div class="btn-row">
-            <a class="btn" id="buyAccess" href="https://www.paypal.com/ncp/payment/PLACEHOLDER" target="_blank" rel="noopener">Unlock</a>
+            <a class="btn" id="buyAccess" href="https://www.paypal.com/ncp/payment/LD5BM638SRCFA" target="_blank" rel="noopener">Unlock</a>
           </div>
         </div>
 
@@ -397,7 +439,7 @@
             <div class="price mono">$39 / month</div>
           </div>
           <div class="btn-row">
-            <a class="btn" id="buyFG" href="https://www.paypal.com/ncp/payment/PLACEHOLDER" target="_blank" rel="noopener">Unlock</a>
+            <a class="btn" id="buyFG" href="https://www.paypal.com/ncp/payment/AKUYMX3FCMUN4" target="_blank" rel="noopener">Unlock</a>
           </div>
         </div>
 
@@ -417,7 +459,7 @@
             <div class="price mono">$59–89 / month</div>
           </div>
           <div class="btn-row">
-            <a class="btn" id="buyBP" href="https://www.paypal.com/ncp/payment/PLACEHOLDER" target="_blank" rel="noopener">Unlock</a>
+            <a class="btn" id="buyBP" href="https://www.paypal.com/ncp/payment/BHQ9A57DLN24S" target="_blank" rel="noopener">Unlock</a>
           </div>
         </div>
 
@@ -438,7 +480,7 @@
             <div class="price mono">$349 • one-month program</div>
           </div>
           <div class="btn-row">
-            <a class="btn" id="buySU" href="https://www.paypal.com/ncp/payment/PLACEHOLDER" target="_blank" rel="noopener">Unlock</a>
+            <a class="btn" id="buySU" href="https://www.paypal.com/ncp/payment/M3CBPH327ELAJ" target="_blank" rel="noopener">Unlock</a>
           </div>
         </div>
 
@@ -458,7 +500,7 @@
             <div class="price mono">$89.99 / month</div>
           </div>
           <div class="btn-row">
-            <a class="btn" id="buyPR" href="https://www.paypal.com/ncp/payment/PLACEHOLDER" target="_blank" rel="noopener">Unlock</a>
+            <a class="btn" id="buyPR" href="https://www.paypal.com/ncp/payment/7N7JBS2V2B25Q" target="_blank" rel="noopener">Unlock</a>
           </div>
         </div>
 
@@ -495,7 +537,7 @@
           <ul>
             <li>Photo → Insight → Action, in one motion.</li>
             <li>Field confidence: less underbidding, fewer revisions.</li>
-            <li>Dual-voice system: Jared (field) + Natty (training).</li>
+            <li>Jared primary. Addie optional (toggle).</li>
           </ul>
         </div>
         <div class="slide">
@@ -503,19 +545,9 @@
           <p class="sub">A field estimator & sales coach — not a chat toy.</p>
           <ul>
             <li>Jared: tools, risks, timing, margin logic.</li>
-            <li>Natty: guides, role-play, objection handling.</li>
-            <li>Shared memory: junior to pro continuum.</li>
+            <li>Addie (optional): friendly summary/readout.</li>
+            <li>Shared memory: junior → pro continuum.</li>
           </ul>
-        </div>
-        <div class="slide">
-          <h3 class="h">Sales U (Program)</h3>
-          <ul>
-            <li>PDF playbooks, scripts, and rejection libraries</li>
-            <li>Live AI role-play (voice) across persona difficulty</li>
-            <li>Hard-close conditioning & pacing</li>
-            <li>Progress map & scoring; confidence coaching</li>
-          </ul>
-          <div class="kpi">Outcome: smoother closes, cleaner language under pressure.</div>
         </div>
         <div class="slide">
           <h3 class="h">System (Technical)</h3>
@@ -654,6 +686,10 @@
     deckPrint2: qs('#deckPrint2'),
     deckExit2: qs('#deckExit2'),
     openDeck: qs('#openDeck'),
+    // Founder sheet
+    founderHandle: qs('#founderHandle'),
+    founderSheet: qs('#founderSheet'),
+    founderClose: qs('#founderClose'),
     // Toast
     toast: qs('#toast'),
     toastBody: qs('#toastBody'),
@@ -664,8 +700,9 @@
     emailModal: qs('#emailModal'),
     emailInput: qs('#emailInput'),
     emailSave: qs('#emailSave'),
-    // Voice orb
+    // Voice orb + Addie
     voiceOrb: qs('#voiceOrb'),
+    addieToggle: qs('#addieToggle'),
   };
 
   /* ========= STATE ========= */
@@ -687,6 +724,10 @@
     analyzing: false,
     audioEnabled: false,
     uploads: 0, // counts this-session for rapid-fire prompt
+    addieActive: localStorage.getItem('herohud_addie')==='1',
+    ratioLocked: sessionStorage.getItem('herohud_ratio_set')==='1',
+    recognition: null,
+    listening: false,
   };
 
   /* ========= UTIL ========= */
@@ -697,7 +738,7 @@
   function dateStamp(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; }
   function downloadTxt(filename, text){ const blob=new Blob([text],{type:"text/plain"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
 
-  /* ========= MODAL EMAIL (pre-paywall) ========= */
+  /* ========= EMAIL GATE ========= */
   function needEmailBeforePay(){ return !STATE.email; }
   function openEmailModal(){ el.emailModal.style.display='flex'; }
   function closeEmailModal(){ el.emailModal.style.display='none'; }
@@ -717,30 +758,38 @@
     await wait(600);
     el.wakeBtn.style.display = 'inline-block';
   };
-  el.btnHomeowner.onclick = () => {
-    // Placeholder — link later
-    alert("Homeowner portal coming soon.");
-  };
+  el.btnHomeowner.onclick = () => { alert("Homeowner portal coming soon."); };
   el.wakeBtn.onclick = async () => {
     enableAudio();
     el.bootVeil.style.display='none';
     el.stage.style.display='grid';
-    el.focusPanel.style.display='flex';
-    speakShortNatty("Drop your photo, we will get you a price.");
+    if(!STATE.ratioLocked) el.focusPanel.style.display='flex';
+    speakJared("HeroHUD online. Drop your photo — we’ll get your estimate ready.");
   };
 
-  /* ========= FOCUS & RATIO ========= */
+  /* ========= FOCUS & RATIO (hide after first pick) ========= */
+  function lockAndHideFocusPanel(){
+    el.focusPanel.style.display='none';
+    STATE.ratioLocked = true;
+    sessionStorage.setItem('herohud_ratio_set','1');
+  }
   el.chips.forEach(ch => ch.onclick = () => {
     el.chips.forEach(x=>x.classList.remove('active'));
     ch.classList.add('active');
     STATE.focus = ch.dataset.focus;
     log('focus_set',{focus:STATE.focus});
+    lockAndHideFocusPanel();
   });
   el.freq.oninput = () => {
     STATE.ratio = Number(el.freq.value);
     const mow=STATE.ratio, land=100-mow;
     el.ratioText.textContent = `${mow}/${land}`;
   };
+  el.freq.onchange = () => { // hide once set via slider too
+    log('ratio_set',{ratio:STATE.ratio});
+    lockAndHideFocusPanel();
+  };
+  if(STATE.ratioLocked){ el.focusPanel.style.display='none'; }
 
   /* ========= CAMERA / UPLOAD ========= */
   el.btnUpload.onclick = ()=> el.file.click();
@@ -758,7 +807,8 @@
   let camStream=null, camVideo=null, captureBtn=null;
   async function openCamera(){
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:"environment"}}}).catch(async()=>{
+      // Default to FRONT-FACING per your directive; fallback to any
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:"user"}}}).catch(async()=>{
         return navigator.mediaDevices.getUserMedia({video:true});
       });
       camStream=stream;
@@ -808,7 +858,8 @@
   /* ========= SPEECH (OpenAI TTS via backend) ========= */
   async function speak(text, voice="alloy", onend){
     try{
-      el.voiceOrb.className='speaking';
+      el.voiceOrb.classList.remove('idle','listening');
+      el.voiceOrb.classList.add('speaking');
       const res = await fetch(`${CONFIG.API_BASE}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -828,15 +879,50 @@
   }
   function speakJared(t, onend){ speak(t, CONFIG.voices.proMale, onend); }
   function speakNatty(t, onend){ speak(t, CONFIG.voices.female, onend); }
-  function speakShortNatty(t){ speakNatty(t); }
-
   function enableAudio(){ STATE.audioEnabled = true; }
+
+  /* ========= Web Speech API (Tap-to-talk) ========= */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR){
+    STATE.recognition = new SR();
+    STATE.recognition.continuous = false;
+    STATE.recognition.interimResults = false;
+    STATE.recognition.lang = 'en-US';
+    STATE.recognition.onresult = (e)=>{
+      const transcript = (e.results[0] && e.results[0][0] && e.results[0][0].transcript || "").trim().toLowerCase();
+      log('voice_input',{transcript});
+      if(/analy[sz]e|run|go/.test(transcript)){ el.btnAnalyze.click(); return; }
+      if(/calculator|calc/.test(transcript)){ toggleCalc(); return; }
+      if(/garage|tools/.test(transcript)){ openGarage(); return; }
+      tip("Heard: \""+transcript+"\"", true);
+    };
+    STATE.recognition.onend = ()=>{ STATE.listening=false; el.voiceOrb.className='idle'; };
+    STATE.recognition.onerror = ()=>{ STATE.listening=false; el.voiceOrb.className='idle'; };
+  } else {
+    el.voiceOrb.title = "Voice (not supported on this browser)";
+  }
+
+  el.voiceOrb.addEventListener('click', ()=>{
+    if(!SR || !STATE.recognition){ toast("Voice", "Speech recognition not supported here."); return; }
+    if(STATE.listening){
+      STATE.recognition.stop();
+      STATE.listening=false;
+      el.voiceOrb.className='idle';
+    }else{
+      try{
+        STATE.listening=true;
+        el.voiceOrb.classList.remove('idle','speaking');
+        el.voiceOrb.classList.add('listening');
+        STATE.recognition.start();
+      }catch(_){ /* noop */ }
+    }
+  });
 
   /* ========= PROFILE DETECTION ========= */
   function determineProfile({ summary, ratio, focus }){
     const s=(summary||"").toLowerCase();
     if(/overgrown|bare|patchy|minimal|stressed/.test(s)) return "homeowner";
-    if(/clean|defined|fresh|crisp|edged/.test(s) && ratio>=60) return "pro"; // mowing-forward + clean site
+    if(/clean|defined|fresh|crisp|edged/.test(s) && ratio>=60) return "pro";
     if(focus==="landscaping" && /bed|mulch|edge|stone|trim/.test(s)) return "pro";
     return "mid";
   }
@@ -884,6 +970,7 @@
       ""
     ].join("\n");
     downloadTxt(`herohud_analysis_${dateStamp()}.txt`, text);
+    toast("Exported", "Log saved to Downloads.");
   };
   el.toastBP.onclick = ()=> { openGarage(); scrollInto('#cardBP'); };
   el.toastFG.onclick = ()=> { openGarage(); scrollInto('#cardFG'); };
@@ -900,7 +987,6 @@
       STATE.analyzing = true;
       clearTips();
       el.wheel.style.display='flex'; el.wheelText.textContent = "Analyzing…";
-      el.voiceOrb.className='thinking';
       log('analyze_start', { focus: STATE.focus, ratio: STATE.ratio });
 
       const node=el.preview.querySelector("img,video");
@@ -931,16 +1017,14 @@
 
       // Voices
       if(!silent){
-        if(STATE.profile==='pro'){
-          speakJared(summary, ()=> toast("Analysis Complete", recommendation));
-        }else if(STATE.profile==='homeowner'){
-          speakNatty("Clean, simple plan ready. See tips below.", ()=> toast("Analysis Complete", recommendation));
-        }else{
-          // mid
-          speak(CONFIG.voices.mid ? recommendation : summary, CONFIG.voices.mid, ()=> toast("Analysis Complete", recommendation));
-        }
+        // Jared always leads
+        speakJared(summary, ()=> {
+          toast("Analysis Complete", recommendation);
+          if(STATE.addieActive){ speakNatty("Summary ready. Tap Export for a client file."); }
+        });
       }else{
         toast("Analysis Ready", recommendation);
+        if(STATE.addieActive){ speakNatty("Quick result ready."); }
       }
 
       // Tips
@@ -953,7 +1037,6 @@
       log('analyze_error', { msg:String(e) });
     }finally{
       el.wheel.style.display='none';
-      el.voiceOrb.className='idle';
       STATE.analyzing = false;
     }
   }
@@ -986,7 +1069,7 @@
 
   // Tier reveals
   Array.from(document.querySelectorAll('.revealBtn')).forEach(b=>{
-    b.onclick = ()=> {
+    b.onclick = ()=>{
       const tgt = qs(b.dataset.reveal);
       if(!tgt) return;
       tgt.style.display = (tgt.style.display==='block')?'none':'block';
@@ -1008,8 +1091,8 @@
         openEmailModal();
         return;
       }
-      // allow
-      setTimeout(()=> markUnlocked(key), 5000); // optimistic local unlock after payment
+      // optimistic local unlock after payment
+      setTimeout(()=> markUnlocked(key), 5000);
     });
   }
 
@@ -1033,7 +1116,7 @@
     lockBadge(el.locks.bp,     STATE.bpUnlocked || STATE.fgUnlocked);
     lockBadge(el.locks.su,     STATE.suUnlocked || STATE.bpUnlocked);
     lockBadge(el.locks.pr,     STATE.prUnlocked || STATE.suUnlocked);
-    // founders always invite only
+    // founders stays invite-only
   }
   function lockBadge(node, unlocked){
     if(!node) return;
@@ -1047,7 +1130,7 @@
   function toggleCalc(){
     const show = el.calcDrawer.style.display!=='block';
     el.calcDrawer.style.display = show?'block':'none';
-    if(show) speakNatty("Calculator ready. Exports unlock with Access Plus.");
+    if(show && STATE.addieActive) speakNatty("Calculator ready. Exports unlock with Access Plus.");
   }
 
   el.btnCalcRun.onclick = ()=>{
@@ -1074,21 +1157,15 @@
       `Size: ${el.size.value}`,
       `Grade: ${el.grade.value}`,
       `Notes: ${el.notes.value||"-"}`,
-      el.calcTotal.textContent
+      `Total: ${el.calcTotal.textContent.replace('Total: ','')}`
     ].join("\n");
     downloadTxt(`herohud_calc_${dateStamp()}.txt`, payload);
     toast("Exported", "Calculator export saved.");
   };
 
   function priceCalc(svc, size, grade){
-    // simple, grounded starter model (adjust later)
     const mul = grade==='premium'?1.35:grade==='standard'?1.0:0.8;
-    const map = {
-      mulch: 0.35,        // per sqft baseline
-      mowing: 0.02,       // per sqft baseline
-      trimming: 7.5,      // per shrub
-      weeding: 0.18       // per sqft
-    };
+    const map = { mulch: 0.35, mowing: 0.02, trimming: 7.5, weeding: 0.18 };
     const unit = map[svc]||0.25;
     const raw = size * unit * mul;
     const overhead = Math.max(15, raw*0.12);
@@ -1110,6 +1187,28 @@
   el.deckNext2.onclick = ()=> showSlide(slideIndex+1);
   el.deckExit2.onclick = closeDeck;
   el.deckPrint2.onclick = ()=> window.print();
+
+  /* ========= FOUNDER SHEET ========= */
+  el.founderHandle.onclick = ()=> el.founderSheet.classList.add('open');
+  el.founderClose.onclick = ()=> el.founderSheet.classList.remove('open');
+
+  /* ========= ADDIE TOGGLE ========= */
+  function reflectAddie(){
+    if(STATE.addieActive){
+      el.addieToggle.classList.add('on');
+      el.addieToggle.textContent = 'ADDIE 🟢';
+    }else{
+      el.addieToggle.classList.remove('on');
+      el.addieToggle.textContent = 'ADDIE 🔴';
+    }
+  }
+  reflectAddie();
+  el.addieToggle.onclick = ()=>{
+    STATE.addieActive = !STATE.addieActive;
+    localStorage.setItem('herohud_addie', STATE.addieActive ? '1' : '0');
+    reflectAddie();
+    if(STATE.addieActive) speakNatty("Addie online.");
+  };
 
   /* ========= DRAG ORB ========= */
   drag(el.voiceOrb);
