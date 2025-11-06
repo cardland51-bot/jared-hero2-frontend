@@ -981,7 +981,6 @@ async function speak(text) {
         voice: CONFIG.voices.jared,
         text
       })
-    });
 
     if (!resp.ok) throw new Error("TTS failed");
 
@@ -1019,6 +1018,3 @@ window.addEventListener("load", async () => {
 </script>
 </body>
 </html>
-
-
-
