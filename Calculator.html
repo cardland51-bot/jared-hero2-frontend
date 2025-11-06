@@ -971,7 +971,7 @@ function clearTips() {
 // ========= VOICE (Jared TTS) =========
 async function speak(text) {
   if (!text) return;
-  log('ak', { text });
+  log('speak', { text });
 
   try {
     const resp = await fetch(`${CONFIG.API_BASE}/speak`, {
@@ -1019,5 +1019,6 @@ window.addEventListener("load", async () => {
 </script>
 </body>
 </html>
+
 
 
