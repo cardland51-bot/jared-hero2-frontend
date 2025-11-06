@@ -138,7 +138,7 @@
         formData.append("file", f, "grass.jpg");
 
         const resp = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.analyze, { method: "POST", body: formData });
-        if (!resp.ok) throw new Error("Analyze request failed");
+        if (!resp.ok) throw new Error("CURRENTLY TRAINING CUSTOM_AI(CARDINAL) FOR TUNED RESPONSE");
         const data = await resp.json();
 
         const summary = data.summary || "Grass analysis complete.";
@@ -164,3 +164,4 @@
   </script>
 </body>
 </html>
+
