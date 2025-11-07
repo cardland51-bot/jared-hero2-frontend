@@ -1,23 +1,5 @@
-// ========= LOGGER (must come first) =========
-function logEvent(name, data = {}) {
-  try { console.debug("[CARDINAL]", name, data); } 
-  catch (_) { /* ignore console issues */ }
-}
-
 // ========= CONFIG =========
-const CONFIG = {
-  API_BASE: "https://cardinalgarageprobe1.onrender.com", // live backend
-  ROUTES: {
-    inference: "/inference",
-    speak: "/speak",
-    train: "/train-collect"
-  }
-};
-
-// ========= SAFE LOGGER =========
-function logEvent(name, data = {}) {
-  try { console.debug("[CARDINAL]", name, data); } catch (_) {}
-}
+const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE"; // temp for local testing
 
 // ========= ELEMENTS =========
 const el = {
@@ -25,388 +7,128 @@ const el = {
   btnUpload: document.getElementById("btnUpload"),
   btnAnalyze: document.getElementById("btnAnalyze"),
   btnSpeak: document.getElementById("btnSpeak"),
-
-  previewFrame: document.getElementById("previewFrame"),
-  previewPlaceholder: document.getElementById("previewPlaceholder"),
   previewImage: document.getElementById("previewImage"),
-
-  estPrice: document.getElementById("estPrice"),
-  estUpsell: document.getElementById("estUpsell"),
+  previewPlaceholder: document.getElementById("previewPlaceholder"),
   estSummary: document.getElementById("estSummary"),
-
-  closeBar: document.getElementById("closeBar"),
-  upsellBar: document.getElementById("upsellBar"),
-  riskBar: document.getElementById("riskBar"),
-  closeVal: document.getElementById("closeVal"),
-  upsellVal: document.getElementById("upsellVal"),
-  riskVal: document.getElementById("riskVal"),
-
-  systemNote: document.getElementById("systemNote"),
-
-  // Widgets
-  btnMowEstimate: document.getElementById("btnMowEstimate"),
-  btnLandEstimate: document.getElementById("btnLandEstimate"),
-
-  // Mystery flags
-  mysteryBtns: document.querySelectorAll(".mystery-btn"),
-
-  // Garage
-  garageBody: document.getElementById("garageBody"),
-  btnGarage: document.getElementById("btnGarage"),
-  btnFounder: document.getElementById("btnFounder"),
-  btnContact: document.getElementById("btnContact"),
-
-  // Modal
-  modalBackdrop: document.getElementById("modalBackdrop"),
-  modalTitle: document.getElementById("modalTitle"),
-  modalBody: document.getElementById("modalBody"),
-  modalClose: document.getElementById("modalClose"),
+  estPrice: document.getElementById("estPrice"),
+  systemNote: document.getElementById("systemNote")
 };
 
-// ========= STATE =========
 const STATE = {
-  lastSummary: "",
-  lastPayload: null,
-  hasImage: false
+  imageBase64: null,
+  lastSummary: ""
 };
 
 // ========= HELPERS =========
-function normalizePrice(p) {
-  if (p === null || p === undefined) return null;
-  if (typeof p === "number" && isFinite(p)) return Math.round(p);
-  const s = String(p).replace(/[^\d.]/g, "");
-  const n = Number(s);
-  return isFinite(n) ? Math.round(n) : null;
-}
-
-function setBar(barEl, labelEl, pct) {
-  const v = clampPct(pct);
-  if (barEl) barEl.style.width = v + "%";
-  if (labelEl) labelEl.textContent = v + "%";
-}
-
-function clampPct(n) {
-  n = Number(n || 0);
-  if (!isFinite(n)) n = 0;
-  return Math.max(0, Math.min(100, Math.round(n)));
-}
-
-function valOrNull(v) {
-  if (v === undefined || v === null) return null;
-  const s = String(v).trim();
-  return s ? s : null;
-}
-
-function numOrNull(v) {
-  if (v === null || v === undefined || v === "") return null;
-  const n = Number(v);
-  return isFinite(n) ? n : null;
-}
-
-let noteTimer = null;
 function setNote(msg) {
-  if (!el.systemNote) return;
   el.systemNote.textContent = msg;
-  if (noteTimer) clearTimeout(noteTimer);
-  noteTimer = setTimeout(() => {
-    el.systemNote.textContent = "Tip: Backend fully controls pricing and output.";
-  }, 5000);
 }
-
 function setLoading(isLoading) {
-  if (el.btnAnalyze) el.btnAnalyze.disabled = isLoading;
-  if (el.btnMowEstimate) el.btnMowEstimate.disabled = isLoading;
-  if (el.btnLandEstimate) el.btnLandEstimate.disabled = isLoading;
-  if (el.btnAnalyze) el.btnAnalyze.textContent = isLoading ? "Working…" : "🔍 Analyze Now";
+  el.btnAnalyze.disabled = isLoading;
+  el.btnAnalyze.textContent = isLoading ? "Working…" : "🔍 Analyze Now";
 }
 
-// ========= APPLY RESULT =========
-function applyInferenceResult(data, source) {
-  const price = normalizePrice(data.price);
-  const upsellText = data.upsell || "—";
-  const summary = (data.summary || "").toString().trim() || `Estimate ready: $${price || "—"}.`;
-  const closePct = clampPct(data.closePct ?? 0);
-  const upsellPct = clampPct(data.upsellPct ?? 0);
-  const riskPct = clampPct(data.riskPct ?? 0);
-
-  if (el.estPrice) el.estPrice.textContent = price ? `$${price}` : "$—";
-  if (el.estUpsell) el.estUpsell.textContent = upsellText;
-  if (el.estSummary) el.estSummary.textContent = summary;
-
-  setBar(el.closeBar, el.closeVal, closePct);
-  setBar(el.upsellBar, el.upsellVal, upsellPct);
-  setBar(el.riskBar, el.riskVal, riskPct);
-
-  STATE.lastSummary = summary;
-  STATE.lastPayload = { price, upsellText, closePct, upsellPct, riskPct };
-
-  setNote("Live result shown. Backend fully controls these numbers.");
-  logEvent("inference_result", { source, raw: data, mapped: STATE.lastPayload });
-}
-
-// ========= PHOTO ANALYSIS =========
-async function analyzePhoto() {
-  const photoFile = el.fileInput?.files?.[0];
-  if (!photoFile) {
-    setNote("Please select a photo first.");
-    return;
-  }
-
-  try {
-    setNote("Analyzing photo… please wait.");
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("image", photoFile);
-    formData.append("mode", "landscaping");
-
-    const resp = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
-      method: "POST",
-      body: formData
-    });
-
-    if (!resp.ok) throw new Error("AI inference failed");
-    const data = await resp.json();
-
-    applyInferenceResult(data, "photo_analyze");
-    setNote("Photo analyzed successfully.");
-    logEvent("photo_analyze_ok", { size: photoFile.size });
-
-  } catch (err) {
-    console.error("❌ AI photo analysis failed:", err);
-    setNote("Photo analysis unavailable — using fallback estimate.");
-    logEvent("photo_analyze_error", { error: String(err) });
-  } finally {
-    setLoading(false);
-  }
-}
-
-// ========= SPEAK (TTS) =========
-async function speakViaBackend(text) {
-  logEvent("speak_request", { text });
-  const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.speak, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ voice: "alloy", text })
-  });
-  if (!res.ok) throw new Error("speak endpoint error");
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  await audio.play();
-}
-
-// ========= WIRING =========
+// ========= UPLOAD =========
 function wireUpload() {
-  if (!el.btnUpload || !el.fileInput) return;
-
   el.btnUpload.addEventListener("click", () => el.fileInput.click());
-
   el.fileInput.addEventListener("change", () => {
     const file = el.fileInput.files[0];
     if (!file) return;
-
     const url = URL.createObjectURL(file);
     el.previewImage.src = url;
     el.previewImage.classList.remove("hidden");
     el.previewPlaceholder.classList.add("hidden");
-    STATE.hasImage = true;
-
-    setNote("Photo loaded. Click Analyze to run AI.");
-    logEvent("photo_selected", { name: file.name, size: file.size });
+    setNote("Photo loaded. Ready for Jared.");
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      STATE.imageBase64 = reader.result.split(",")[1];
+    };
+    reader.readAsDataURL(file);
   });
 }
 
+// ========= ANALYZE (OpenAI Vision) =========
 function wireAnalyze() {
-  if (!el.btnAnalyze) return;
-
   el.btnAnalyze.addEventListener("click", async () => {
-    if (STATE.hasImage) {
-      return analyzePhoto();
+    if (!STATE.imageBase64) {
+      setNote("Upload a photo first.");
+      return;
     }
 
-    // Calculator-based JSON request (no photo)
-    const payload = {
-      mode: "landscaping",
-      service: "landscaping",
-      inputs: {
-        areaSqFt: numOrNull(document.querySelector("#mowArea")?.value),
-        shrubCount: numOrNull(document.querySelector("#landShrubs")?.value),
-        bedSize: valOrNull(document.querySelector("#landBeds")?.value),
-        material: valOrNull(document.querySelector("#landMaterial")?.value),
-      },
-      notes: "",
-      photoSummary: "No photo provided.",
-      meta: { source: "pro_calculator_console" }
-    };
-
-    setNote("Analyzing via /inference…");
     setLoading(true);
-    logEvent("analyze_start", payload);
+    setNote("Jared is analyzing with OpenAI…");
 
     try {
-      const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
+      const resp = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1-mini",
+          input: [
+            {
+              role: "user",
+              content: [
+                { type: "input_text", text: "Describe this yard or landscape photo in detail and what work might be needed." },
+                { type: "input_image", image_data: STATE.imageBase64 }
+              ]
+            }
+          ]
+        })
       });
 
-      if (!res.ok) throw new Error("Inference failed");
-      const data = await res.json();
-      applyInferenceResult(data, "analyze_click");
+      if (!resp.ok) throw new Error(await resp.text());
+      const data = await resp.json();
+      const summary = data.output_text || "No response received.";
+      STATE.lastSummary = summary;
+
+      el.estSummary.textContent = summary;
+      el.estPrice.textContent = "$—";
+      setNote("Analysis complete — Jared has spoken.");
+
+      // Auto-speak result
+      await speakJared(summary);
+
     } catch (err) {
-      console.error("❌ Analyze error:", err);
-      setNote("Analysis failed. Check backend or network.");
-      logEvent("analyze_error", { error: String(err) });
+      console.error("❌ Jared error:", err);
+      setNote("Analysis failed. Check connection or key.");
     } finally {
       setLoading(false);
     }
   });
 }
 
-function wireSpeak() {
-  if (!el.btnSpeak) return;
-  el.btnSpeak.addEventListener("click", async () => {
-    const text = STATE.lastSummary || "No estimate yet. Upload a photo or run a calculator first.";
-    try {
-      await speakViaBackend(text);
-    } catch (err) {
-      console.warn(err);
-      setNote("Voice temporarily unavailable.");
-      logEvent("speak_error", { error: String(err) });
-    }
-  });
-}
-
-function wireWidgets() {
-  document.querySelectorAll(".widget-header").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetSel = btn.getAttribute("data-target");
-      const body = document.querySelector(targetSel);
-      if (!body) return;
-      const open = body.classList.contains("open");
-      document.querySelectorAll(".widget-body").forEach(b => b.classList.remove("open"));
-      if (!open) body.classList.add("open");
-    });
-  });
-
-  el.mysteryBtns.forEach(btn => {
-    btn.addEventListener("click", () => btn.classList.toggle("active"));
-  });
-
-  if (el.btnMowEstimate) {
-    el.btnMowEstimate.addEventListener("click", async () => {
-      const payload = {
-        type: "mowing",
-        inputs: {
-          areaSqFt: numOrNull(document.getElementById("mowArea")?.value),
-          terrain: valOrNull(document.getElementById("mowTerrain")?.value),
-          access: valOrNull(document.getElementById("mowAccess")?.value),
-          visit: valOrNull(document.getElementById("mowVisit")?.value)
-        },
-        meta: { source: "mowing_widget" }
-      };
-      await runWidgetInference(payload, "mowing_widget");
-    });
-  }
-
-  if (el.btnLandEstimate) {
-    el.btnLandEstimate.addEventListener("click", async () => {
-      const flags = [];
-      el.mysteryBtns.forEach(btn => {
-        if (btn.classList.contains("active")) {
-          const f = btn.getAttribute("data-flag");
-          if (f) flags.push(f);
-        }
-      });
-      const payload = {
-        type: "landscaping",
-        inputs: {
-          beds: numOrNull(document.getElementById("landBeds")?.value),
-          material: valOrNull(document.getElementById("landMaterial")?.value),
-          shrubs: numOrNull(document.getElementById("landShrubs")?.value),
-          detail: valOrNull(document.getElementById("landDetail")?.value),
-          flags
-        },
-        meta: { source: "landscaping_widget" }
-      };
-      await runWidgetInference(payload, "landscaping_widget");
-    });
-  }
-}
-
-async function runWidgetInference(payload, source) {
-  setNote("Sending to /inference…");
-  setLoading(true);
-  logEvent("widget_inference_start", { source, payload });
+// ========= SPEAK (OpenAI Voice) =========
+async function speakJared(text) {
   try {
-    const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
+    const res = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini-tts",
+        voice: "alloy",
+        input: text
+      })
     });
-    if (!res.ok) throw new Error("inference failed");
-    const data = await res.json();
-    applyInferenceResult(data, source);
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    await audio.play();
   } catch (err) {
-    console.error(err);
-    setNote("Widget request failed. Check backend.");
-    logEvent("widget_inference_error", { source, error: String(err) });
-  } finally {
-    setLoading(false);
+    console.error("TTS error:", err);
+    setNote("Speech unavailable, but analysis succeeded.");
   }
 }
 
-function wireGarage() {
-  if (el.btnGarage) {
-    el.btnGarage.addEventListener("click", () => {
-      if (!el.garageBody) return;
-      const open = el.garageBody.classList.contains("open");
-      document.querySelectorAll(".widget-body").forEach(b => b.classList.remove("open"));
-      if (!open) el.garageBody.classList.add("open");
-      logEvent("garage_open", {});
-    });
-  }
-
-  if (el.btnFounder) {
-    el.btnFounder.addEventListener("click", () => {
-      showModal("Founder’s Black Book", "Reserved capsule for lifetime partners.");
-      logEvent("founder_modal_open", {});
-    });
-  }
-
-  if (el.btnContact) {
-    el.btnContact.addEventListener("click", () => {
-      showModal("Contact Cardinal Garage Pro", "Hook up your CRM or contact form here.");
-      logEvent("contact_click", {});
-    });
-  }
-
-  if (el.modalClose) el.modalClose.addEventListener("click", hideModal);
-  if (el.modalBackdrop) {
-    el.modalBackdrop.addEventListener("click", e => {
-      if (e.target === el.modalBackdrop) hideModal();
-    });
-  }
-}
-
-function showModal(title, body) {
-  el.modalTitle.textContent = title;
-  el.modalBody.textContent = body;
-  el.modalBackdrop.classList.remove("hidden");
-}
-
-function hideModal() {
-  el.modalBackdrop.classList.add("hidden");
-}
-
-// ========= BOOT =========
+// ========= INIT =========
 window.addEventListener("DOMContentLoaded", () => {
   wireUpload();
   wireAnalyze();
-  wireSpeak();
-  wireWidgets();
-  wireGarage();
-  logEvent("page_load", { page: "pro_calculator" });
+  setNote("Jared ready. Upload → Analyze.");
 });
-
