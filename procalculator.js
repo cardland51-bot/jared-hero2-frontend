@@ -1,3 +1,9 @@
+// ========= LOGGER (must come first) =========
+function logEvent(name, data = {}) {
+  try { console.debug("[CARDINAL]", name, data); } 
+  catch (_) { /* ignore console issues */ }
+}
+
 // ========= CONFIG =========
 const CONFIG = {
   API_BASE: "https://cardinalgarageprobe1.onrender.com", // live backend
@@ -403,3 +409,4 @@ window.addEventListener("DOMContentLoaded", () => {
   wireGarage();
   logEvent("page_load", { page: "pro_calculator" });
 });
+
