@@ -61,5 +61,100 @@
     </div>
     <div class="note">Straight to tools. No logins. No friction.</div>
   </div>
+<!-- ========== DEV LOGIN OVERLAY ========== -->
+<style>
+  #devLoginLink {
+    position: fixed; bottom: 6px; right: 12px;
+    font-size: 13px; color: #c41e3a; cursor: pointer;
+    opacity: .5; transition: opacity .2s;
+  }
+  #devLoginLink:hover { opacity: 1; }
+
+  #devModal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(255,255,255,.95);
+    align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  #devModal form {
+    background: #fff; border:1px solid #ddd; border-radius:12px;
+    padding:24px; box-shadow:0 0 20px rgba(0,0,0,.1);
+    width:280px; text-align:center;
+  }
+  #devModal input {
+    width:100%; margin:6px 0; padding:8px; font-size:15px;
+    border:1px solid #ccc; border-radius:6px;
+  }
+  #devModal button {
+    background:#c41e3a; color:#fff; border:none;
+    padding:8px 14px; margin-top:8px;
+    border-radius:6px; cursor:pointer;
+  }
+  #devModal button:hover { background:#a91b32; }
+
+  .adminOnly { display:none; }
+  .dev-mode .adminOnly { display:inline-block; }
+</style>
+
+<div id="devLoginLink">Dev Login</div>
+<div id="devModal">
+  <form id="devForm">
+    <h3>Developer Access</h3>
+    <input id="devEmail" type="email" placeholder="Email" required>
+    <input id="devPass" type="password" placeholder="Passcode" required>
+    <button type="submit">Enter</button><br>
+    <small id="devMsg" style="color:#a91b32;"></small>
+  </form>
+</div>
+
+  <!-- Example hidden admin control -->
+<button id="trainBtn" class="adminOnly">Feed Training</button>
+
+<script>
+const CONFIG = {
+  API_BASE: "https://cardinalgarageprobe1.onrender.com" // or your live backend
+};
+
+const devLink = document.getElementById("devLoginLink");
+const devModal = document.getElementById("devModal");
+const devForm  = document.getElementById("devForm");
+const devMsg   = document.getElementById("devMsg");
+
+// open login modal
+devLink.onclick = ()=> devModal.style.display='flex';
+
+// handle login
+devForm.onsubmit = async (e)=>{
+  e.preventDefault();
+  const email = devForm.querySelector("#devEmail").value.trim();
+  const pass  = devForm.querySelector("#devPass").value.trim();
+  devMsg.textContent = "Verifying...";
+  try {
+    const resp = await fetch(`${CONFIG.API_BASE}/auth`, {
+      method:"POST", headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, pass })
+    });
+    if (!resp.ok) throw new Error("Denied");
+    document.body.classList.add("dev-mode");
+    devModal.style.display='none';
+  } catch(err){
+    devMsg.textContent = "Access denied.";
+  }
+};
+
+// example admin button logic
+document.getElementById("trainBtn").onclick = async ()=>{
+  const note = prompt("Enter training note:");
+  if(!note) return;
+  const resp = await fetch(`${CONFIG.API_BASE}/train`, {
+    method:"POST", headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ note })
+  });
+  alert("Training data sent!");
+};
+</script>
+
+  
 </body>
 </html>
+
