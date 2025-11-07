@@ -2,136 +2,244 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-  <title>Cardinal Calculator • Upload → Estimate → Send</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Cardinal Garage Pro • Upload → Estimate → Send</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="procalculator.css" />
 </head>
 <body>
+  <!-- Top Bar -->
   <header class="topbar">
     <div class="brand">
-      <strong>Cardinal Calculator</strong>
-      <small>Fast price. Clear upsell. Field-first.</small>
+      <div class="brand-mark">CARDINAL</div>
+      <div class="brand-sub">Garage Pro • Field Estimate Console</div>
     </div>
+    <nav class="topnav">
+      <button class="pill" id="btnGarage">Garage</button>
+      <a class="pill subtle" href="./" id="btnHome">Home</a>
+    </nav>
   </header>
 
-  <main class="wrap">
-    <!-- Service grid -->
-    <section class="panel">
-      <h2 class="panel-title">Services</h2>
-      <div class="grid" id="serviceGrid">
-        <button class="chip" data-service="mulch">Mulch</button>
-        <button class="chip" data-service="trimming">Trimming</button>
-        <button class="chip" data-service="weeding">Weeding</button>
-        <button class="chip" data-service="edging">Edging</button>
-        <button class="chip" data-service="cleanup">Cleanup</button>
-        <button class="chip" data-service="haulaway">Haul-Away</button>
+  <!-- Main Layout -->
+  <main class="layout">
+    <!-- Left: Upload / Preview / Analyze -->
+    <section class="panel panel-main">
+      <h1 class="headline">Upload → Estimate → Send</h1>
+      <p class="subline">Photo-first estimates with real numbers, upsell signal, and risk clarity.</p>
+
+      <div class="upload-actions">
+        <button class="btn primary" id="btnUpload">⬆ Upload Photo</button>
+        <button class="btn ghost" id="btnAnalyze">🔍 Analyze Now</button>
+        <button class="btn ghost" id="btnSpeak">🔊 Read It</button>
       </div>
-    </section>
 
-    <!-- Inputs (lightweight; backend owns logic) -->
-    <section class="panel">
-      <h2 class="panel-title">Inputs</h2>
-      <form id="calcForm" class="form">
-        <div class="row">
-          <label>Selected Service</label>
-          <input id="service" name="service" type="text" class="input" placeholder="Pick a service above" readonly />
+      <input type="file" id="fileInput" accept="image/*" hidden />
+
+      <!-- Preview frame -->
+      <div class="preview-frame" id="previewFrame">
+        <div class="preview-placeholder" id="previewPlaceholder">
+          Drop in a yard, driveway, bed, or frontage photo.<br />
+          This is the live tool your reps keep open.
         </div>
+        <img id="previewImage" alt="Preview" class="preview-img hidden" />
+      </div>
 
-        <!-- Common, optional fields (backend may ignore or use). Keep simple. -->
-        <div class="row">
-          <label>Bed Size</label>
-          <select id="bedSize" name="bedSize" class="input">
-            <option value="">—</option>
-            <option value="small">Small (1 space)</option>
-            <option value="medium">Medium (2 spaces)</option>
-            <option value="large">Large (3 spaces)</option>
-          </select>
+      <!-- Result summary -->
+      <div class="summary-block">
+        <div class="summary-line">
+          <span class="summary-label">Field Estimate</span>
+          <span class="summary-value" id="estPrice">$—</span>
         </div>
-
-        <div class="row">
-          <label>Area (sq ft)</label>
-          <input id="areaSqFt" name="areaSqFt" type="number" min="0" class="input" placeholder="e.g., 400" />
+        <div class="summary-line">
+          <span class="summary-label">Upsell Potential</span>
+          <span class="summary-soft" id="estUpsell">—</span>
         </div>
-
-        <div class="row">
-          <label>Shrub Count</label>
-          <input id="shrubCount" name="shrubCount" type="number" min="0" class="input" placeholder="e.g., 12" />
-        </div>
-
-        <div class="row">
-          <label>Material</label>
-          <select id="material" name="material" class="input">
-            <option value="">—</option>
-            <option value="mulch">Mulch</option>
-            <option value="stone">Stone</option>
-            <option value="soil">Soil</option>
-          </select>
-        </div>
-
-        <div class="row">
-          <label>Mowing Frequency</label>
-          <select id="mowingFreq" name="mowingFreq" class="input">
-            <option value="">—</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="rarely">Rarely</option>
-          </select>
-        </div>
-
-        <div class="actions">
-          <button id="btnCalculate" class="btn-primary" type="button">Calculate</button>
-          <button id="btnReset" class="btn" type="button">Reset</button>
-        </div>
-      </form>
-    </section>
-
-    <!-- Results -->
-    <section class="panel">
-      <h2 class="panel-title">Result</h2>
-
-      <div id="result" class="result">
-        <div class="main">
-          <div class="price" id="price">$—</div>
-          <div class="upsell" id="upsell">Upsell potential: —</div>
-        </div>
-
-        <div class="bars">
-          <div class="bar">
-            <div class="bar-head">
-              <span>Close %</span><span id="closeVal">0%</span>
-            </div>
-            <div class="bar-track"><div id="closeBar" class="bar-fill"></div></div>
-          </div>
-
-          <div class="bar">
-            <div class="bar-head">
-              <span>Upsell %</span><span id="upsellVal">0%</span>
-            </div>
-            <div class="bar-track"><div id="upsellBar" class="bar-fill"></div></div>
-          </div>
-
-          <div class="bar">
-            <div class="bar-head">
-              <span>Risk %</span><span id="riskVal">0%</span>
-            </div>
-            <div class="bar-track"><div id="riskBar" class="bar-fill"></div></div>
-          </div>
-        </div>
-
-        <div class="speak">
-          <button id="btnSpeak" class="btn" type="button">🔊 Read Result</button>
+        <div class="summary-text" id="estSummary">
+          Ready when you are. Upload a photo or run a quick calculator.
         </div>
       </div>
 
-      <div id="note" class="note">Tip: Your backend controls all inputs and pricing logic. Frontend just sends JSON and speaks what you return.</div>
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">
+            Close Confidence
+            <span class="metric-val" id="closeVal">0%</span>
+          </div>
+          <div class="metric-bar"><div class="metric-fill" id="closeBar"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">
+            Upsell Signal
+            <span class="metric-val" id="upsellVal">0%</span>
+          </div>
+          <div class="metric-bar"><div class="metric-fill" id="upsellBar"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">
+            Risk / Rework
+            <span class="metric-val" id="riskVal">0%</span>
+          </div>
+          <div class="metric-bar"><div class="metric-fill" id="riskBar"></div></div>
+        </div>
+      </div>
+
+      <!-- System note -->
+      <div class="note" id="systemNote">
+        Tip: This console sends clean JSON to your backend. All pricing logic lives on your side.
+      </div>
+    </section>
+
+    <!-- Right: Calculators & Garage -->
+    <section class="panel panel-side">
+      <h2 class="side-title">Pro Calculators</h2>
+      <p class="side-sub">Slide open a tool. Your reps can run numbers before or after a photo.</p>
+
+      <!-- Mowing Widget -->
+      <div class="widget">
+        <button class="widget-header" data-target="#mowingBody">
+          <span>🏁 Mowing / Basic Service</span>
+          <span class="widget-toggle">▼</span>
+        </button>
+        <div class="widget-body" id="mowingBody">
+          <form id="mowingForm" class="form-grid">
+            <label>
+              Lot Size (sq ft)
+              <input type="number" id="mowArea" min="0" placeholder="e.g. 6500" />
+            </label>
+            <label>
+              Terrain
+              <select id="mowTerrain">
+                <option value="">Select</option>
+                <option value="easy">Easy / flat</option>
+                <option value="normal">Normal</option>
+                <option value="tough">Tight / hills</option>
+              </select>
+            </label>
+            <label>
+              Gate / Access
+              <select id="mowAccess">
+                <option value="">Standard</option>
+                <option value="narrow">Narrow gate</option>
+                <option value="limited">Limited access</option>
+              </select>
+            </label>
+            <label>
+              Visit Type
+              <select id="mowVisit">
+                <option value="">One-time</option>
+                <option value="biweekly">Bi-weekly</option>
+                <option value="weekly">Weekly route</option>
+              </select>
+            </label>
+          </form>
+          <div class="widget-actions">
+            <button class="btn small primary" id="btnMowEstimate">Run Mowing Estimate</button>
+            <span class="widget-hint">Outputs into main estimate block.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Landscaping Widget -->
+      <div class="widget">
+        <button class="widget-header" data-target="#landBody">
+          <span>🪴 Landscaping Scope</span>
+          <span class="widget-toggle">▼</span>
+        </button>
+        <div class="widget-body" id="landBody">
+          <form id="landForm" class="form-grid">
+            <label>
+              Beds / Zones
+              <input type="number" id="landBeds" min="0" placeholder="e.g. 3" />
+            </label>
+            <label>
+              Mulch / Rock
+              <select id="landMaterial">
+                <option value="">Select</option>
+                <option value="basic_mulch">Standard mulch</option>
+                <option value="premium_mulch">Premium mulch</option>
+                <option value="stone">Stone / rock</option>
+              </select>
+            </label>
+            <label>
+              Shrubs / Small Plants
+              <input type="number" id="landShrubs" min="0" placeholder="e.g. 14" />
+            </label>
+            <label>
+              Edge / Detail Time
+              <select id="landDetail">
+                <option value="">Normal</option>
+                <option value="high_detail">High detail</option>
+                <option value="overgrown">Overgrown</option>
+              </select>
+            </label>
+          </form>
+
+          <!-- Mystery Controls (sent to backend as flags) -->
+          <div class="mystery-row">
+            <button class="mystery-btn" data-flag="sig_route" title="Signal Route Lock-in"></button>
+            <button class="mystery-btn" data-flag="sig_premium" title="Signal Premium Scope"></button>
+            <button class="mystery-btn" data-flag="sig_speed" title="Signal Speed Window"></button>
+          </div>
+
+          <div class="widget-actions">
+            <button class="btn small primary" id="btnLandEstimate">Run Landscaping Estimate</button>
+            <span class="widget-hint">Back-end can decode mystery flags later.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Garage / Upgrades Preview -->
+      <div class="widget">
+        <button class="widget-header" data-target="#garageBody">
+          <span>🔒 Garage • Pro Tools & Upgrades</span>
+          <span class="widget-toggle">▼</span>
+        </button>
+        <div class="widget-body" id="garageBody">
+          <ul class="garage-list">
+            <li>
+              <span class="lock-label">Zero-Friction Docs™</span>
+              <span class="lock-pill">Locked • Upgrade</span>
+            </li>
+            <li>
+              <span class="lock-label">Platinum Reports</span>
+              <span class="lock-pill">Locked • Upgrade</span>
+            </li>
+            <li>
+              <span class="lock-label">Route Builder & Lot Size Finder</span>
+              <span class="lock-pill">Locked • In Garage</span>
+            </li>
+            <li>
+              <span class="lock-label">Natty Sales University</span>
+              <span class="lock-pill">Portal</span>
+            </li>
+          </ul>
+          <button class="btn tiny outline" id="btnFounder">
+            Founder’s Black Book (Pill) →
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact Pill (simple, you fill destination later) -->
+      <div class="contact-pill">
+        <div class="contact-label">Need Cardinal to wire your pricing logic?</div>
+        <button class="btn tiny primary" id="btnContact">
+          Contact Cardinal Garage Pro
+        </button>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <span>© Cardinal Systems</span>
-  </footer>
+  <!-- Minimal modal shell (for future) -->
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="btn tiny outline" id="modalClose">Close</button>
+      </div>
+    </div>
+  </div>
 
-  <script src="script.js"></script>
+  <script src="procalculator.js"></script>
 </body>
 </html>
