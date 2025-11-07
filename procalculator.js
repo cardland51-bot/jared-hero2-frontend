@@ -1,6 +1,6 @@
 // ========= CONFIG =========
 const CONFIG = {
-  API_BASE: "https://jared-hero2-backend.onrender.com", // your backend
+  API_BASE: "http://localhost:5500", // your backend
   ROUTES: {
     inference: "/inference",
     speak: "/speak",
@@ -385,5 +385,6 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
 
 
