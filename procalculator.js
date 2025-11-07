@@ -155,7 +155,8 @@ async function analyzePhoto() {
   } finally {
     setLoading(false);
   }
-}
+} // ✅ this closes analyzePhoto() cleanly
+
 
 // ========= APPLY RESULT =========
 function applyInferenceResult(data, source) {
@@ -399,5 +400,6 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
 
 
