@@ -1,30 +1,28 @@
-/* ========= CONFIG ========= */
+// ========= CONFIG =========
 const CONFIG = {
-  // ⬇️ Set this to your live backend on Render
-  API_BASE: "https://jared-hero2-backend.onrender.com",
-
-  // Endpoints you already control in the backend
+  API_BASE: "https://jared-hero2-backend.onrender.com", // your backend (no change needed)
   ROUTES: {
-    calculate: "/calculate", // expects JSON; you control logic + response
-    speak: "/speak"          // POST { voice, text } -> audio blob
-  },
-  voice: "alloy"             // or whatever your backend expects
+    inference: "/inference",
+    speak: "/speak",
+    train: "/train-collect"
+  }
 };
 
-/* ========= ELEMENTS ========= */
+// ========= ELEMENTS =========
 const el = {
-  serviceGrid: document.getElementById("serviceGrid"),
-  service: document.getElementById("service"),
-  bedSize: document.getElementById("bedSize"),
-  areaSqFt: document.getElementById("areaSqFt"),
-  shrubCount: document.getElementById("shrubCount"),
-  material: document.getElementById("material"),
-  mowingFreq: document.getElementById("mowingFreq"),
-  btnCalculate: document.getElementById("btnCalculate"),
-  btnReset: document.getElementById("btnReset"),
+  fileInput: document.getElementById("fileInput"),
+  btnUpload: document.getElementById("btnUpload"),
+  btnAnalyze: document.getElementById("btnAnalyze"),
+  btnSpeak: document.getElementById("btnSpeak"),
 
-  price: document.getElementById("price"),
-  upsell: document.getElementById("upsell"),
+  previewFrame: document.getElementById("previewFrame"),
+  previewPlaceholder: document.getElementById("previewPlaceholder"),
+  previewImage: document.getElementById("previewImage"),
+
+  estPrice: document.getElementById("estPrice"),
+  estUpsell: document.getElementById("estUpsell"),
+  estSummary: document.getElementById("estSummary"),
+
   closeBar: document.getElementById("closeBar"),
   upsellBar: document.getElementById("upsellBar"),
   riskBar: document.getElementById("riskBar"),
@@ -32,180 +30,378 @@ const el = {
   upsellVal: document.getElementById("upsellVal"),
   riskVal: document.getElementById("riskVal"),
 
-  btnSpeak: document.getElementById("btnSpeak"),
-  note: document.getElementById("note")
+  systemNote: document.getElementById("systemNote"),
+
+  // Widgets
+  mowingBody: document.getElementById("mowingBody"),
+  landBody: document.getElementById("landBody"),
+  btnMowEstimate: document.getElementById("btnMowEstimate"),
+  btnLandEstimate: document.getElementById("btnLandEstimate"),
+
+  // Mystery flags
+  mysteryBtns: document.querySelectorAll(".mystery-btn"),
+
+  // Garage
+  garageBody: document.getElementById("garageBody"),
+  btnGarage: document.getElementById("btnGarage"),
+  btnFounder: document.getElementById("btnFounder"),
+  btnContact: document.getElementById("btnContact"),
+
+  // Modal
+  modalBackdrop: document.getElementById("modalBackdrop"),
+  modalTitle: document.getElementById("modalTitle"),
+  modalBody: document.getElementById("modalBody"),
+  modalClose: document.getElementById("modalClose")
 };
 
-/* ========= STATE ========= */
 const STATE = {
-  lastSummary: ""
+  lastSummary: "",
+  lastPayload: null,
+  hasImage: false
 };
 
-/* ========= INIT ========= */
-window.addEventListener("load", () => {
-  // Service selection
-  el.serviceGrid.addEventListener("click", (e) => {
-    const btn = e.target.closest(".chip");
-    if (!btn) return;
-    [...el.serviceGrid.querySelectorAll(".chip")].forEach(c => c.classList.remove("active"));
-    btn.classList.add("active");
-    el.service.value = btn.dataset.service || "";
-  });
-
-  // Calculate
-  el.btnCalculate.addEventListener("click", onCalculate);
-  el.btnReset.addEventListener("click", resetForm);
-  el.btnSpeak.addEventListener("click", () => speak(STATE.lastSummary || makeFallbackSpeech()));
+// ========= INIT =========
+window.addEventListener("DOMContentLoaded", () => {
+  wireUpload();
+  wireAnalyze();
+  wireSpeak();
+  wireWidgets();
+  wireGarage();
+  logEvent("page_load", { page: "pro_calculator" });
 });
 
-/* ========= HANDLERS ========= */
-async function onCalculate(){
-  const service = (el.service.value || "").trim();
-  if (!service) { flashNote("Pick a service first."); return; }
+// ========= UPLOAD / PREVIEW =========
+function wireUpload() {
+  el.btnUpload.addEventListener("click", () => el.fileInput.click());
 
-  const payload = {
-    service,
-    inputs: {
-      bedSize: valueOrNull(el.bedSize.value),
-      areaSqFt: numOrNull(el.areaSqFt.value),
-      shrubCount: numOrNull(el.shrubCount.value),
-      material: valueOrNull(el.material.value),
-      mowingFreq: valueOrNull(el.mowingFreq.value)
+  el.fileInput.addEventListener("change", () => {
+    const file = el.fileInput.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    el.previewImage.src = url;
+    el.previewImage.classList.remove("hidden");
+    el.previewPlaceholder.classList.add("hidden");
+    STATE.hasImage = true;
+
+    setNote("Photo loaded. Click Analyze Now to run your backend logic.");
+    logEvent("photo_selected", { name: file.name, size: file.size });
+  });
+}
+
+// ========= ANALYZE BUTTON =========
+function wireAnalyze() {
+  el.btnAnalyze.addEventListener("click", async () => {
+    // Right now: sends JSON to /inference.
+    // If you later add a real /analyze with file upload, you can swap here.
+    const body = buildInferenceBodyFromState();
+
+    setNote("Analyzing via /inference…");
+    setLoading(true);
+
+    try {
+      const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) throw new Error("Inference failed");
+
+      const data = await res.json();
+      applyInferenceResult(data, "analyze_click");
+    } catch (err) {
+      console.error(err);
+      setNote("Analysis failed. Check backend or network.");
+      logEvent("analyze_error", { error: String(err) });
+    } finally {
+      setLoading(false);
+    }
+  });
+}
+
+function buildInferenceBodyFromState() {
+  // Minimal, safe payload your backend can extend.
+  return {
+    type: STATE.hasImage ? "photo" : "generic",
+    meta: {
+      hasImage: STATE.hasImage,
+      source: "pro_calculator_console"
     }
   };
+}
+
+// ========= APPLY RESULT =========
+function applyInferenceResult(data, source) {
+  const price = normalizePrice(data.price);
+  const upsellText = data.upsell || "—";
+  const summary = (data.summary || "").toString().trim() || buildFallbackSummary(price, upsellText);
+
+  const closePct = clampPct(data.closePct ?? 0);
+  const upsellPct = clampPct(data.upsellPct ?? 0);
+  const riskPct = clampPct(data.riskPct ?? 0);
+
+  el.estPrice.textContent = price ? `$${price}` : "$—";
+  el.estUpsell.textContent = upsellText;
+  el.estSummary.textContent = summary;
+
+  setBar(el.closeBar, el.closeVal, closePct);
+  setBar(el.upsellBar, el.upsellVal, upsellPct);
+  setBar(el.riskBar, el.riskVal, riskPct);
+
+  STATE.lastSummary = summary;
+  STATE.lastPayload = { price, upsellText, closePct, upsellPct, riskPct };
+
+  setNote("Live result shown. Backend fully controls these numbers.");
+
+  logEvent("inference_result", {
+    source,
+    raw: data,
+    mapped: STATE.lastPayload
+  });
+}
+
+function normalizePrice(p) {
+  if (p === null || p === undefined) return null;
+  if (typeof p === "number" && isFinite(p)) return Math.round(p);
+  const s = String(p).replace(/[^\d.]/g, "");
+  const n = Number(s);
+  return isFinite(n) ? Math.round(n) : null;
+}
+
+function buildFallbackSummary(price, upsell) {
+  if (price && upsell && upsell !== "—") {
+    return `Estimate around $${price}. Upsell potential ${upsell}. Customize this logic in your backend.`;
+  }
+  if (price) return `Estimate around $${price}.`;
+  return "Backend responded. Configure your /inference payload for richer output.";
+}
+
+// ========= SPEAK (Jared voice via backend /speak) =========
+function wireSpeak() {
+  el.btnSpeak.addEventListener("click", async () => {
+    const text = STATE.lastSummary || "No estimate yet. Upload a photo or run a calculator first.";
+    try {
+      await speakViaBackend(text);
+    } catch (err) {
+      console.warn(err);
+      setNote("Voice temporarily unavailable.");
+    }
+  });
+}
+
+async function speakViaBackend(text) {
+  // Only call if you have /speak implemented. Otherwise this fails gracefully.
+  logEvent("speak_request", { text });
+  const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.speak, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voice: "alloy", text })
+  });
+  if (!res.ok) throw new Error("speak endpoint error");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  await audio.play();
+}
+
+// ========= WIDGETS (Mowing + Landscaping) =========
+function wireWidgets() {
+  // Collapsible toggles
+  document.querySelectorAll(".widget-header").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetSel = btn.getAttribute("data-target");
+      if (!targetSel) return;
+      const body = document.querySelector(targetSel);
+      if (!body) return;
+      const open = body.classList.contains("open");
+      document.querySelectorAll(".widget-body").forEach(b => b.classList.remove("open"));
+      if (!open) body.classList.add("open");
+    });
+  });
+
+  // Mystery toggles
+  el.mysteryBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("active");
+    });
+  });
+
+  // Mowing estimate
+  el.btnMowEstimate.addEventListener("click", async () => {
+    const body = {
+      type: "mowing",
+      inputs: {
+        areaSqFt: numOrNull(document.getElementById("mowArea").value),
+        terrain: valOrNull(document.getElementById("mowTerrain").value),
+        access: valOrNull(document.getElementById("mowAccess").value),
+        visit: valOrNull(document.getElementById("mowVisit").value)
+      },
+      meta: { source: "mowing_widget" }
+    };
+
+    await runWidgetInference(body, "mowing_widget");
+  });
+
+  // Landscaping estimate
+  el.btnLandEstimate.addEventListener("click", async () => {
+    const flags = [];
+    el.mysteryBtns.forEach(btn => {
+      if (btn.classList.contains("active")) {
+        const f = btn.getAttribute("data-flag");
+        if (f) flags.push(f);
+      }
+    });
+
+    const body = {
+      type: "landscaping",
+      inputs: {
+        beds: numOrNull(document.getElementById("landBeds").value),
+        material: valOrNull(document.getElementById("landMaterial").value),
+        shrubs: numOrNull(document.getElementById("landShrubs").value),
+        detail: valOrNull(document.getElementById("landDetail").value),
+        flags
+      },
+      meta: { source: "landscaping_widget" }
+    };
+
+    await runWidgetInference(body, "landscaping_widget");
+  });
+}
+
+async function runWidgetInference(payload, source) {
+  setNote("Sending to /inference…");
+  setLoading(true);
+  logEvent("widget_inference_start", { source, payload });
 
   try {
-    setCalculating(true);
-
-    const resp = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.calculate, {
+    const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
-    if (!resp.ok) throw new Error("Calculate request failed");
-    const data = await resp.json();
-
-    // EXPECTED (but your backend controls this):
-    // { price, upsell, summary, closePct, upsellPct, riskPct }
-    const price = safeText(data.price, "$—");
-    const upsell = safeText(data.upsell, "—");
-    const summary = safeText(data.summary, buildSummaryFrom(price, upsell));
-
-    const closePct = clampPct(data.closePct ?? 0);
-    const upsellPct = clampPct(data.upsellPct ?? 0);
-    const riskPct = clampPct(data.riskPct ?? 0);
-
-    // Update UI
-    el.price.textContent = fmtPrice(price);
-    el.upsell.textContent = `Upsell potential: ${fmtUpsell(upsell)}`;
-    setBar(el.closeBar, el.closeVal, closePct);
-    setBar(el.upsellBar, el.upsellVal, upsellPct);
-    setBar(el.riskBar, el.riskVal, riskPct);
-
-    // Save & auto-speak (price + potential)
-    STATE.lastSummary = summary;
-    await speak(summary);
-
+    if (!res.ok) throw new Error("inference failed");
+    const data = await res.json();
+    applyInferenceResult(data, source);
   } catch (err) {
     console.error(err);
-    flashNote("Calculation failed. Check backend and try again.");
+    setNote("Widget request failed. Check backend.");
+    logEvent("widget_inference_error", { source, error: String(err) });
   } finally {
-    setCalculating(false);
+    setLoading(false);
   }
 }
 
-/* ========= BACKEND TTS ========= */
-async function speak(text){
-  if (!text) return;
-  try{
-    const resp = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.speak, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voice: CONFIG.voice, text })
+// ========= GARAGE / MODAL =========
+function wireGarage() {
+  if (el.btnGarage) {
+    el.btnGarage.addEventListener("click", () => {
+      // just toggle the garage widget open
+      if (!el.garageBody) return;
+      const open = el.garageBody.classList.contains("open");
+      document.querySelectorAll(".widget-body").forEach(b => b.classList.remove("open"));
+      if (!open) el.garageBody.classList.add("open");
+      logEvent("garage_open", {});
     });
-    if (!resp.ok) throw new Error("TTS failed");
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    await audio.play();
-  }catch(err){
-    console.warn("TTS unavailable:", err);
-    flashNote("Voice temporarily unavailable.");
+  }
+
+  if (el.btnFounder) {
+    el.btnFounder.addEventListener("click", () => {
+      showModal(
+        "Founder’s Black Book",
+        "Reserved capsule for your lifetime partners. Link your live checkout or deck here when ready."
+      );
+      logEvent("founder_modal_open", {});
+    });
+  }
+
+  if (el.btnContact) {
+    el.btnContact.addEventListener("click", () => {
+      showModal(
+        "Contact Cardinal Garage Pro",
+        "Set this button to your email, form, or CRM intake. For now, it’s a placeholder so you never forget the hook."
+      );
+      logEvent("contact_click", {});
+    });
+  }
+
+  if (el.modalClose) {
+    el.modalClose.addEventListener("click", hideModal);
+  }
+  if (el.modalBackdrop) {
+    el.modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === el.modalBackdrop) hideModal();
+    });
   }
 }
 
-/* ========= HELPERS ========= */
-function setCalculating(busy){
-  el.btnCalculate.disabled = busy;
-  el.btnCalculate.textContent = busy ? "Calculating…" : "Calculate";
+function showModal(title, body) {
+  el.modalTitle.textContent = title;
+  el.modalBody.textContent = body;
+  el.modalBackdrop.classList.remove("hidden");
 }
 
-function resetForm(){
-  [...document.querySelectorAll(".chip")].forEach(c => c.classList.remove("active"));
-  document.getElementById("calcForm").reset();
-  el.price.textContent = "$—";
-  el.upsell.textContent = "Upsell potential: —";
-  setBar(el.closeBar, el.closeVal, 0);
-  setBar(el.upsellBar, el.upsellVal, 0);
-  setBar(el.riskBar, el.riskVal, 0);
-  STATE.lastSummary = "";
+function hideModal() {
+  el.modalBackdrop.classList.add("hidden");
 }
 
-function setBar(barEl, labelEl, pct){
-  barEl.style.width = pct + "%";
-  labelEl.textContent = pct + "%";
+// ========= HELPERS =========
+function setBar(barEl, labelEl, pct) {
+  const v = clampPct(pct);
+  if (barEl) barEl.style.width = v + "%";
+  if (labelEl) labelEl.textContent = v + "%";
 }
 
-function clampPct(n){
-  n = Number(n ?? 0);
-  if (Number.isNaN(n)) n = 0;
+function clampPct(n) {
+  n = Number(n || 0);
+  if (!isFinite(n)) n = 0;
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function valueOrNull(v){ return (v && v.trim()) ? v.trim() : null; }
-function numOrNull(v){
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-function safeText(v, fallback=""){
-  if (v === null || v === undefined) return fallback;
+function valOrNull(v) {
+  if (!v) return null;
   const s = String(v).trim();
-  return s.length ? s : fallback;
+  return s ? s : null;
 }
 
-function fmtPrice(p){
-  // Accept "$480", "480", 480 — display as-is if already prefixed
-  const s = String(p).trim();
-  if (s.startsWith("$")) return s;
-  const n = Number(s);
-  return Number.isFinite(n) ? `$${n.toFixed(0)}` : s;
-}
-function fmtUpsell(u){
-  const s = String(u).trim();
-  if (!s) return "—";
-  if (/^\$?\d+(\.\d+)?$/.test(s)){
-    // just a number: turn into money with plus
-    const n = s.startsWith("$") ? s.slice(1) : s;
-    const num = Number(n);
-    return Number.isFinite(num) ? `+$${num.toFixed(0)}` : s;
-  }
-  return s; // allow custom backend wording
-}
-
-function buildSummaryFrom(price, upsell){
-  const p = fmtPrice(price);
-  const u = fmtUpsell(upsell);
-  if (u && u !== "—") {
-    return `Estimate ${p}. Upsell potential ${u}.`;
-  }
-  return `Estimate ${p}.`;
+function numOrNull(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return isFinite(n) ? n : null;
 }
 
 let noteTimer = null;
-function flashNote(msg){
-  el.note.textContent = msg;
-  clearTimeout(noteTimer);
-  noteTimer = setTimeout(() => el.note.textContent = "Tip: Your backend controls all inputs and pricing logic. Frontend just sends JSON and speaks what you return.", 4500);
+function setNote(msg) {
+  if (!el.systemNote) return;
+  el.systemNote.textContent = msg;
+  if (noteTimer) clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    el.systemNote.textContent =
+      "Tip: This console sends clean JSON to your backend. All pricing logic lives on your side.";
+  }, 5000);
+}
+
+function setLoading(isLoading) {
+  el.btnAnalyze.disabled = isLoading;
+  el.btnMowEstimate && (el.btnMowEstimate.disabled = isLoading);
+  el.btnLandEstimate && (el.btnLandEstimate.disabled = isLoading);
+  el.btnAnalyze.textContent = isLoading ? "Working…" : "🔍 Analyze Now";
+}
+
+// ========= TRAIN-COLLECT LOGGING =========
+async function logEvent(event, payload) {
+  try {
+    await fetch(CONFIG.API_BASE + CONFIG.ROUTES.train, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event,
+        t: Date.now(),
+        payload: payload || {},
+        source: "pro_calculator_frontend"
+      })
+    }).catch(() => {});
+  } catch {
+    // non-fatal
+  }
 }
