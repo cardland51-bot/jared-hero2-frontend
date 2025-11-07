@@ -1,1 +1,15 @@
+<script>
+async function loadLesson() {
+  try {
+    const resp = await fetch("https://cardland51-bot.github.io/cardinalgaragepro/data/lessons.json");
+    const lessons = await resp.json();
+    const pick = lessons[Math.floor(Math.random() * lessons.length)];
+    document.getElementById("lessonBox").textContent = pick;
+  } catch (err) {
+    console.error("Lesson load failed:", err);
+    document.getElementById("lessonBox").textContent = "Couldn't load lesson right now.";
+  }
+}
+window.addEventListener("load", loadLesson);
+</script>
 
