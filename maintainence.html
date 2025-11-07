@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cardinal Garage Pro — Maintenance</title>
+  <style>
+    :root {
+      --bg: #111;
+      --overlay: rgba(0,0,0,0.75);
+      --accent: #C41E3A;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: var(--font);
+      color: white;
+      background: linear-gradient(180deg,#222,#000);
+      background-attachment: fixed;
+      background-size: cover;
+      overflow-y: scroll;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      z-index: 999;
+    }
+    .banner {
+      font-size: 2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .subtext {
+      font-size: 1rem;
+      color: #ccc;
+      margin-top: .5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="banner">System Maintenance</div>
+    <div class="subtext">Please be patient — we’re coming back online soon.</div>
+  </div>
+</body>
+</html>
