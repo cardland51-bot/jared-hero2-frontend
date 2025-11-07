@@ -131,6 +131,14 @@ function wireAnalyze() {
     }
   });
 }
+// ========= PRICE NORMALIZATION =========
+function normalizePrice(p) {
+  if (p === null || p === undefined) return null;
+  if (typeof p === "number" && isFinite(p)) return Math.round(p);
+  const s = String(p).replace(/[^\d.]/g, "");
+  const n = Number(s);
+  return isFinite(n) ? Math.round(n) : null;
+}
 
 // ========= APPLY RESULT =========
 function applyInferenceResult(data, source) {
@@ -366,3 +374,4 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
