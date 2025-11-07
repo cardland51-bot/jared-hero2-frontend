@@ -93,12 +93,55 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========= ANALYZE =========
-function wireAnalyze() 
-      } finally {
+// ========= ANALYZE =========
+function wireAnalyze() {
+  if (!el.btnAnalyze) return;
+
+  el.btnAnalyze.addEventListener("click", async () => {
+    // If there's a photo, go straight to photo AI
+    if (STATE.hasImage) {
+      return analyzePhoto();
+    }
+
+    const mode = "landscaping";
+    const payload = {
+      mode,
+      service: mode,
+      inputs: {
+        areaSqFt: numOrNull(document.querySelector('#mowArea')?.value),
+        shrubCount: numOrNull(document.querySelector('#landShrubs')?.value),
+        bedSize: document.querySelector('#landBeds')?.value || "",
+        material: document.querySelector('#landMaterial')?.value || ""
+      },
+      notes: "",
+      photoSummary: STATE.hasImage ? "Photo uploaded for analysis." : "No photo yet",
+      meta: { source: "pro_calculator_console" }
+    };
+
+    setNote("Analyzing via /inference…");
+    setLoading(true);
+
+    try {
+      const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Inference failed");
+      const data = await res.json();
+      applyInferenceResult(data, "analyze_click");
+
+    } catch (err) {
+      console.error(err);
+      setNote("Analysis failed. Check backend or network.");
+      logEvent("analyze_error", { error: String(err) });
+    } finally {
       setLoading(false);
     }
-  }); 
-}     
+  });
+}
+
 
 
     setNote("Analyzing via /inference…");
@@ -400,6 +443,7 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
 
 
 
