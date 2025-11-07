@@ -140,6 +140,17 @@ function normalizePrice(p) {
   return isFinite(n) ? Math.round(n) : null;
 }
 
+// ========= FALLBACK SUMMARY (safe default) =========
+function buildFallbackSummary(result) {
+  if (!result) return "No data returned from the backend.";
+
+  const price = result.price || "—";
+  const upsell = result.upsell ? `${result.upsell}% upsell signal.` : "";
+  const risk = result.risk ? `Risk rating ${result.risk}/10.` : "";
+
+  return `Estimate: $${price}. ${upsell} ${risk}`.trim();
+}
+
 // ========= APPLY RESULT =========
 function applyInferenceResult(data, source) {
   const price = normalizePrice(data.price);
@@ -374,4 +385,5 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
 
