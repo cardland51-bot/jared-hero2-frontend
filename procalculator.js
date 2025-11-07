@@ -388,3 +388,36 @@ async function logEvent(event, payload) {
   }
 }
 
+  if (noteTimer) clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    el.systemNote.textContent =
+      "Tip: This console sends clean JSON to your backend. All pricing logic lives on your side.";
+  }, 5000);
+}
+
+function setLoading(isLoading) {
+  el.btnAnalyze.disabled = isLoading;
+  el.btnMowEstimate && (el.btnMowEstimate.disabled = isLoading);
+  el.btnLandEstimate && (el.btnLandEstimate.disabled = isLoading);
+  el.btnAnalyze.textContent = isLoading ? "Working…" : "🔍 Analyze Now";
+}
+
+// ========= TRAIN-COLLECT LOGGING =========
+async function logEvent(event, payload) {
+  try {
+    await fetch(CONFIG.API_BASE + CONFIG.ROUTES.train, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event,
+        t: Date.now(),
+        payload: payload || {},
+        source: "pro_calculator_frontend"
+      })
+    }).catch(() => {});
+  } catch {
+    // non-fatal
+  }
+}
+
+
