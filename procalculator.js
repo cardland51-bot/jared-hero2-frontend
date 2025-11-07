@@ -70,7 +70,7 @@ function wireAnalyze() {
     setNote("Analyzing locally...");
 
     // Simple fake placeholder result
-    const summary = "Yard loaded successfully. Jared ready to assist.";
+    const summary = "Cardinal_AI is being trained currently.";
     const price = "$—";
 
     el.estSummary.textContent = summary;
@@ -100,3 +100,4 @@ window.addEventListener("DOMContentLoaded", () => {
   wireJaredToggle();
   setNote("Ready — Jared toggle available.");
 });
+
