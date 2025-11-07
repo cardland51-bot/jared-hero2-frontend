@@ -430,22 +430,28 @@ function setLoading(isLoading) {
   el.btnAnalyze.textContent = isLoading ? "Working…" : "🔍 Analyze Now";
 }
 
-async function logEvent(event, payload) {
+(async () => {
+  setNote("Analyzing via /inference…");
+  setLoading(true);
   try {
-    await fetch(CONFIG.API_BASE + CONFIG.ROUTES.train, {
+    const res = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event,
-        t: Date.now(),
-        payload: payload || {},
-        source: "pro_calculator_frontend"
-      })
+      body: JSON.stringify(payload)
     });
-  } catch {
-    // silent fail
+    if (!res.ok) throw new Error("Inference failed");
+    const data = await res.json();
+    applyInferenceResult(data, "analyze_click");
+  } catch (err) {
+    console.error(err);
+    setNote("Analysis failed. Check backend or network.");
+    logEvent("analyze_error", { error: String(err) });
+  } finally {
+    setLoading(false);
   }
-}
+})();
+
+
 
 
 
