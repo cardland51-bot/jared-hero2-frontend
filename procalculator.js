@@ -159,39 +159,47 @@ function normalizePrice(p) {
   return isFinite(n) ? Math.round(n) : null;
 }
 
-// ========= PHOTO ANALYSIS =========
-// ========= PHOTO ANALYSIS =========
-async function analyzePhoto(photoFile, userNotes) {
-  try {
-    // Build the form data to send to your backend
-    const formData = new FormData();
-    formData.append("image", photoFile);                 // actual photo
-    formData.append("mode", "landscaping");              // or "mowing"
-    formData.append("notes", userNotes || "");
 
-    // Send it to your backend /inference route
-    const resp = await fetch(`${CONFIG.API_BASE}/inference`, {
+// ========= PHOTO ANALYSIS =========
+// ========= PHOTO ANALYZE =========
+async function analyzePhoto() {
+  const photoFile = el.fileInput?.files?.[0];
+  if (!photoFile) {
+    setNote("Please select a photo first.");
+    return;
+  }
+
+  try {
+    setNote("Analyzing photo… please wait.");
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("image", photoFile);
+    formData.append("mode", "landscaping");
+
+    const resp = await fetch(CONFIG.API_BASE + CONFIG.ROUTES.inference, {
       method: "POST",
       body: formData
     });
-
-    // If backend fails, throw an error
     if (!resp.ok) throw new Error("AI inference failed");
 
-    // Read backend JSON (price, upsell, risk, etc.)
     const data = await resp.json();
-
-    // Apply results directly to the calculator
-    applyResult(data);
-
-    // Optional confirmation in console
-    console.log("✅ AI photo analysis result:", data);
-
+    applyInferenceResult(data, "photo_analyze");
+    setNote("Photo analyzed successfully.");
   } catch (err) {
-    console.error("❌ AI photo analysis failed:", err);
-    tip("AI photo analysis unavailable, using fallback estimate.", true);
+    console.error(err);
+    setNote("Photo analysis unavailable — using fallback estimate.");
+  } finally {
+    setLoading(false);
   }
 }
+
+if (el.btnAnalyze) {
+  el.btnAnalyze.addEventListener("click", () => {
+    if (STATE.hasImage) analyzePhoto();
+  });
+}
+
 
 // ========= UPLOAD HANDLER =========
 el.photoInput.onchange = () => {
@@ -443,6 +451,7 @@ async function logEvent(event, payload) {
     // silent fail
   }
 }
+
 
 
 
